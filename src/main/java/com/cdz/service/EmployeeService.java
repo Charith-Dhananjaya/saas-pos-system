@@ -12,7 +12,7 @@ public interface EmployeeService {
 
     UserDto createBranchEmployee(UserDto employee, Long branchId) throws Exception;
 
-    User updateEmployee(Long employeeId, UserDto employeeDetails) throws Exception;
+    UserDto updateEmployee(Long employeeId, UserDto employeeDetails) throws Exception;
 
     void deleteEmployee(Long employeeId) throws Exception;
 

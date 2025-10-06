@@ -13,6 +13,7 @@ import com.cdz.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,23 +78,48 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+    @Transactional
     @Override
-    public User updateEmployee(Long employeeId, UserDto employeeDetails) throws Exception {
+    public UserDto updateEmployee(Long employeeId, UserDto employeeDetails) throws Exception {
 
-        User existingEmployee = userRepository.findById(employeeId).orElseThrow(
-                ()-> new Exception("Employee not existed..")
-        );
+        User existingEmployee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new Exception("Employee not existed.."));
 
-        Branch branch = branchRepository.findById(employeeDetails.getBranchId()).orElseThrow(
-                () -> new Exception("Branch not found")
-        );
+        // Update simple fields
+        if (employeeDetails.getEmail() != null) {
+            existingEmployee.setEmail(employeeDetails.getEmail());
+        }
+        if (employeeDetails.getFullName() != null) {
+            existingEmployee.setFullName(employeeDetails.getFullName());
+        }
+        if (employeeDetails.getPhone() != null) {
+            existingEmployee.setPhone(employeeDetails.getPhone());
+        }
+        if (employeeDetails.getRole() != null) {
+            existingEmployee.setRole(employeeDetails.getRole());
+        }
 
-        existingEmployee.setEmail(employeeDetails.getEmail());
-        existingEmployee.setFullName(employeeDetails.getFullName());
-        existingEmployee.setPassword(employeeDetails.getPassword());
-        existingEmployee.setRole(employeeDetails.getRole());
-        existingEmployee.setBranch(branch);
-        return userRepository.save(existingEmployee);
+        // Update password only if non-empty
+        if (employeeDetails.getPassword() != null && !employeeDetails.getPassword().isBlank()) {
+            existingEmployee.setPassword(passwordEncoder.encode(employeeDetails.getPassword()));
+        }
+
+        // Update branch if provided
+        if (employeeDetails.getBranchId() != null) {
+            Branch branch = branchRepository.findById(employeeDetails.getBranchId())
+                    .orElseThrow(() -> new Exception("Branch not found"));
+            existingEmployee.setBranch(branch);
+
+            // Optional: ensure the branch belongs to the same store as the employee (if your model requires that)
+            // if (existingEmployee.getStore() != null &&
+            //     branch.getStore() != null &&
+            //     !existingEmployee.getStore().getId().equals(branch.getStore().getId())) {
+            //     throw new Exception("Branch does not belong to employee's store");
+            // }
+        }
+
+        User saved = userRepository.save(existingEmployee);
+        return UserMapper.toDTO(saved); // return shallow DTO
     }
 
     @Override
