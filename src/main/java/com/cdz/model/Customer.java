@@ -1,8 +1,7 @@
 package com.cdz.model;
 
-import com.cdz.domain.UserRole;
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -13,7 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class User {
+@Builder
+public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,29 +22,12 @@ public class User {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
-    @Email(message = "Email should be valid")
     private String email;
-
-
-    @ManyToOne
-    private Store store;
-
-    @ManyToOne
-    private Branch branch;
 
     private String phone;
 
-    @Column(length = 50,nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
-
-    @Column(nullable = false)
-    private String password;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime lastLogin;
 
     @PrePersist
     protected void onCreate(){
