@@ -30,9 +30,12 @@ public class User {
     @ManyToOne
     private Store store;
 
+    @ManyToOne
+    private Branch branch;
+
     private String phone;
 
-    @Column(nullable = false)
+    @Column(length = 50,nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
