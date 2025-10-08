@@ -3,6 +3,7 @@ package com.cdz.controller;
 import com.cdz.domain.OrderStatus;
 import com.cdz.domain.PaymentType;
 import com.cdz.payload.dto.OrderDTO;
+import com.cdz.payload.response.ApiResponse;
 import com.cdz.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -67,9 +68,13 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) throws Exception {
+    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable Long id) throws Exception {
         orderService.deleteOrder(id);
-        return ResponseEntity.noContent().build();
+
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage("Order Deleted");
+
+        return ResponseEntity.ok(apiResponse);
     }
 
 
