@@ -2,11 +2,9 @@ package com.cdz.service.impl;
 
 import com.cdz.domain.UserRole;
 import com.cdz.mapper.UserMapper;
-import com.cdz.model.Branch;
 import com.cdz.model.Store;
 import com.cdz.model.User;
 import com.cdz.payload.dto.UserDto;
-import com.cdz.repository.BranchRepository;
 import com.cdz.repository.StoreRepository;
 import com.cdz.repository.UserRepository;
 import com.cdz.service.EmployeeService;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final StoreRepository storeRepository;
-    private final BranchRepository branchRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
@@ -32,50 +29,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new Exception("Store not found")
         );
-
-        Branch branch = null;
-
-        if (employee.getRole() == UserRole.ROLE_BRANCH_MANAGER) {
-            if (employee.getBranchId() == null) {
-                throw new Exception("Branch Id is reqiured to create branch manager");
-            }
-            branch = branchRepository.findById(employee.getBranchId()).orElseThrow(
-                    () -> new Exception("Branch not found")
-            );
-
-        }
-
         User user = UserMapper.toEntity(employee);
         user.setStore(store);
-        user.setBranch(branch);
         user.setPassword(passwordEncoder.encode(employee.getPassword()));
-
         User savedEmployee = userRepository.save(user);
-        if (employee.getRole() == UserRole.ROLE_BRANCH_MANAGER && branch != null) {
-            branch.setManager(savedEmployee);
-            branchRepository.save(branch);
-        }
-
         return UserMapper.toDTO(savedEmployee);
-    }
-
-    @Override
-    public UserDto createBranchEmployee(UserDto employee, Long branchId) throws Exception {
-
-        Branch branch = branchRepository.findById(branchId).orElseThrow(
-                () -> new Exception("Branch not found")
-        );
-        if (employee.getRole() == UserRole.ROLE_BRANCH_CASHIER ||
-                employee.getRole() == UserRole.ROLE_BRANCH_MANAGER) {
-
-            User user = UserMapper.toEntity(employee);
-            user.setBranch(branch);
-            user.setPassword(passwordEncoder.encode(employee.getPassword()));
-            return UserMapper.toDTO(userRepository.save(user));
-
-        }
-        throw new Exception("Branch role not supported");
-
     }
 
     @Transactional
@@ -104,18 +62,11 @@ public class EmployeeServiceImpl implements EmployeeService {
             existingEmployee.setPassword(passwordEncoder.encode(employeeDetails.getPassword()));
         }
 
-        // Update branch if provided
-        if (employeeDetails.getBranchId() != null) {
-            Branch branch = branchRepository.findById(employeeDetails.getBranchId())
-                    .orElseThrow(() -> new Exception("Branch not found"));
-            existingEmployee.setBranch(branch);
-
-            // Optional: ensure the branch belongs to the same store as the employee (if your model requires that)
-            // if (existingEmployee.getStore() != null &&
-            //     branch.getStore() != null &&
-            //     !existingEmployee.getStore().getId().equals(branch.getStore().getId())) {
-            //     throw new Exception("Branch does not belong to employee's store");
-            // }
+        // Update store if provided
+        if (employeeDetails.getStoreId() != null) {
+            Store store = storeRepository.findById(employeeDetails.getStoreId())
+                    .orElseThrow(() -> new Exception("Store not found"));
+            existingEmployee.setStore(store);
         }
 
         User saved = userRepository.save(existingEmployee);
@@ -145,17 +96,4 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<UserDto> findBranchEmployees(Long branchId, UserRole role) throws Exception {
-
-        Branch branch = branchRepository.findById(branchId).orElseThrow(
-                () -> new Exception("Branch not found")
-        );
-
-        return userRepository.findByBranchId(branchId)
-                .stream().filter(
-                        user -> role == null || user.getRole() == role)
-                .map(UserMapper::toDTO)
-                .collect(Collectors.toList());
-    }
 }

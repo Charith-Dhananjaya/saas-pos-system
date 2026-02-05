@@ -14,11 +14,11 @@ public interface OrderService {
 
     OrderDTO getOrderById(Long id) throws Exception;
 
-    List<OrderDTO> getOrdersByBranch(Long branchId,
-                                     Long customerId,
-                                     Long cashierId,
-                                     PaymentType paymentType,
-                                     OrderStatus orderStatus) throws Exception;
+    List<OrderDTO> getOrdersByStore(Long storeId,
+                                   Long customerId,
+                                   Long cashierId,
+                                   PaymentType paymentType,
+                                   OrderStatus orderStatus) throws Exception;
 
     List<OrderDTO> getOrdersByCashier(Long cashierId);
 
@@ -26,8 +26,8 @@ public interface OrderService {
 
     List<OrderDTO> getOrdersByCustomerId(Long customerId) throws Exception;
 
-    List<OrderDTO> getTodayOrdersByBranch(Long branchId) throws Exception;
+    List<OrderDTO> getTodayOrdersByStore(Long storeId) throws Exception;
 
-    List<OrderDTO> getTop5RecentOrdersByBranchId(Long branchId) throws Exception;
+    List<OrderDTO> getTop5RecentOrdersByStoreId(Long storeId) throws Exception;
 
 }

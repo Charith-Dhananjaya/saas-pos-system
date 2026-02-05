@@ -38,8 +38,8 @@ public class AuthServiceImpl implements AuthService {
         if (user != null) {
             throw new UserException("Email is already registered !");
         }
-        if(userDto.getRole().equals(UserRole.ROLE_ADMIN)){
-            throw new UserException("Role admin is not allowed !");
+        if (userDto.getRole() == null) {
+            throw new UserException("Role is required");
         }
 
         User newUser = new User();

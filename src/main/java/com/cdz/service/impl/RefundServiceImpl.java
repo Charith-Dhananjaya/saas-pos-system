@@ -1,14 +1,14 @@
 package com.cdz.service.impl;
 
 import com.cdz.mapper.RefundMapper;
-import com.cdz.model.Branch;
 import com.cdz.model.Order;
 import com.cdz.model.Refund;
+import com.cdz.model.Store;
 import com.cdz.model.User;
 import com.cdz.payload.dto.RefundDTO;
-import com.cdz.repository.BranchRepository;
 import com.cdz.repository.OrderRepository;
 import com.cdz.repository.RefundRepository;
+import com.cdz.service.BillingService;
 import com.cdz.service.RefundService;
 import com.cdz.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,7 +27,7 @@ public class RefundServiceImpl implements RefundService {
     private final RefundRepository refundRepository;
     private final UserService userService;
     private final OrderRepository orderRepository;
-    private final BranchRepository branchRepository;
+    private final BillingService billingService;
 
     @Override
     public RefundDTO createRefund(RefundDTO refund) throws Exception {
@@ -35,17 +35,32 @@ public class RefundServiceImpl implements RefundService {
         Order order = orderRepository.findById(refund.getOrderId())
                 .orElseThrow(() -> new EntityNotFoundException("Order not found: " + refund.getOrderId()));
 
-
-        Branch branch = (refund.getBranchId() != null)
-                ? branchRepository.findById(refund.getBranchId())
-                .orElseThrow(() -> new EntityNotFoundException("Branch not found: " + refund.getBranchId()))
-                : order.getBranch();
+        Store store = order.getStore();
+        if (store == null) {
+            throw new EntityNotFoundException("Order has no store");
+        }
 
         User cashier = userService.getCurrentUser();
 
+        // If order was paid by card via Stripe, process refund through Stripe first
+        if (order.getPaymentType() == com.cdz.domain.PaymentType.CARD
+                && order.getStripePaymentIntentId() != null
+                && !order.getStripePaymentIntentId().isBlank()
+                && refund.getAmount() != null
+                && refund.getAmount() > 0) {
+            long amountCents = Math.round(refund.getAmount() * 100);
+            if (amountCents > 0) {
+                billingService.refundCardPayment(
+                        order.getStripePaymentIntentId(),
+                        amountCents,
+                        refund.getReason()
+                );
+            }
+        }
+
         Refund refunds = Refund.builder()
                 .order(order)
-                .branch(branch)
+                .store(store)
                 .cashier(cashier)
                 .reason(refund.getReason())
                 .amount(refund.getAmount())
@@ -90,8 +105,8 @@ public class RefundServiceImpl implements RefundService {
     }
 
     @Override
-    public List<RefundDTO> getRefundByBranch(Long branchId) throws Exception {
-        return refundRepository.findByBranchId(branchId).stream().map(RefundMapper::toDTO)
+    public List<RefundDTO> getRefundByStore(Long storeId) throws Exception {
+        return refundRepository.findByStoreId(storeId).stream().map(RefundMapper::toDTO)
                 .collect(Collectors.toList());
     }
 

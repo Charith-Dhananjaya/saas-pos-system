@@ -3,9 +3,19 @@ package com.cdz.service.impl;
 import com.cdz.domain.PaymentType;
 import com.cdz.exceptions.UserException;
 import com.cdz.mapper.ShiftReportMapper;
-import com.cdz.model.*;
+import com.cdz.model.Order;
+import com.cdz.model.OrderItem;
+import com.cdz.model.PaymentSummary;
+import com.cdz.model.Product;
+import com.cdz.model.Refund;
+import com.cdz.model.ShiftReport;
+import com.cdz.model.Store;
+import com.cdz.model.User;
 import com.cdz.payload.dto.ShiftReportDTO;
-import com.cdz.repository.*;
+import com.cdz.repository.OrderRepository;
+import com.cdz.repository.RefundRepository;
+import com.cdz.repository.ShiftReportRepository;
+import com.cdz.repository.UserRepository;
 import com.cdz.service.ShiftReportService;
 import com.cdz.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +31,6 @@ public class ShiftReportServiceImpl implements ShiftReportService {
 
     private final ShiftReportRepository shiftReportRepository;
     private final UserService userService;
-    private final BranchRepository branchRepository;
     private final OrderRepository orderRepository;
     private final RefundRepository refundRepository;
     private final UserRepository userRepository;
@@ -47,12 +56,12 @@ public class ShiftReportServiceImpl implements ShiftReportService {
             throw new Exception("A shift has already been started today for this cashier.");
         }
 
-        Branch branch = currentUser.getBranch();
+        Store store = currentUser.getStore();
 
         ShiftReport shiftReport = ShiftReport.builder()
                 .cashier(currentUser)
                 .shiftStart(shiftStart)
-                .branch(branch)
+                .store(store)
                 .build();
 
        ShiftReport savedReport =  shiftReportRepository.save(shiftReport);
@@ -135,9 +144,8 @@ public class ShiftReportServiceImpl implements ShiftReportService {
     }
 
     @Override
-    public List<ShiftReportDTO> getShiftReportsByBranchId(Long branchId) {
-        List<ShiftReport> reports = shiftReportRepository.findByBranchId(branchId);
-
+    public List<ShiftReportDTO> getShiftReportsByStoreId(Long storeId) {
+        List<ShiftReport> reports = shiftReportRepository.findByStoreId(storeId);
         return reports.stream()
                 .map(ShiftReportMapper::toDTO)
                 .collect(Collectors.toList());

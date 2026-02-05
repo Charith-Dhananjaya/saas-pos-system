@@ -20,16 +20,17 @@ public class OrderDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Long branchId;
+    private Long storeId;
     private Long customerId;
-
-    private BranchDTO branch;
 
     private UserDto cashier;
 
     private Customer customer;
 
     private PaymentType paymentType;
+
+    /** When paymentType is CARD, set after Stripe confirms payment (for saving and refunds). */
+    private String stripePaymentIntentId;
 
     private List<OrderItemDTO> items;
 }

@@ -28,7 +28,7 @@ public class Order {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    private Branch branch;
+    private Store store;
 
     @ManyToOne
     private User cashier;
@@ -41,6 +41,9 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private PaymentType  paymentType;
+
+    /** Stripe PaymentIntent id when paymentType is CARD (for refunds). */
+    private String stripePaymentIntentId;
 
     @PrePersist
     protected void onCreate(){

@@ -18,7 +18,7 @@ public interface ShiftReportService {
 
     List<ShiftReportDTO> getAllShiftReports();
 
-    List<ShiftReportDTO> getShiftReportsByBranchId(Long branchId);
+    List<ShiftReportDTO> getShiftReportsByStoreId(Long storeId);
 
     List<ShiftReportDTO> getShiftReportsByCashierId(Long cashierId);
 

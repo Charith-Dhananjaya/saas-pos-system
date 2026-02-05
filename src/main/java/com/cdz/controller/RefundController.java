@@ -36,9 +36,9 @@ public class RefundController {
         return ResponseEntity.ok(refunds);
     }
 
-    @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<RefundDTO>> getRefundByBranch(@PathVariable Long branchId) throws Exception {
-        List<RefundDTO> refunds = refundService.getRefundByBranch(branchId);
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<RefundDTO>> getRefundByStore(@PathVariable Long storeId) throws Exception {
+        List<RefundDTO> refunds = refundService.getRefundByStore(storeId);
         return ResponseEntity.ok(refunds);
     }
 

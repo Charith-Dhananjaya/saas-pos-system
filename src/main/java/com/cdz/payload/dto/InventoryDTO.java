@@ -12,11 +12,9 @@ public class InventoryDTO {
 
     private Long id;
 
-    private BranchDTO branch;
-
     private ProductDTO product;
 
-    private Long branchId;
+    private Long storeId;
     private Long productId;
 
     private Integer quantity;

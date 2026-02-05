@@ -50,19 +50,16 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.getInventoryById(id));
     }
 
-    @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<InventoryDTO>> getInventoryByBranchId(
-            @PathVariable Long branchId) {
-
-        return ResponseEntity.ok(inventoryService.getInventoryByBranchId(branchId));
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<InventoryDTO>> getInventoryByStoreId(@PathVariable Long storeId) {
+        return ResponseEntity.ok(inventoryService.getInventoryByStoreId(storeId));
     }
 
-    @GetMapping("/branch/{branchId}/product/{productId}")
-    public ResponseEntity<InventoryDTO> getInventoryByProductIdAndBranchId(
-            @PathVariable Long productId,
-            @PathVariable Long branchId) {
-
-        return ResponseEntity.ok(inventoryService.getInventoryByProductIdAndBranchId(productId, branchId));
+    @GetMapping("/store/{storeId}/product/{productId}")
+    public ResponseEntity<InventoryDTO> getInventoryByProductIdAndStoreId(
+            @PathVariable Long storeId,
+            @PathVariable Long productId) {
+        return ResponseEntity.ok(inventoryService.getInventoryByProductIdAndStoreId(productId, storeId));
     }
 
 }
