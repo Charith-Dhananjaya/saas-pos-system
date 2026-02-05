@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/shift-report")
+@RequestMapping("/api/shift-report")
 public class ShiftReportController {
 
     private final ShiftReportService shiftReportService;

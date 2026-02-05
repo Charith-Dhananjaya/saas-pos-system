@@ -29,17 +29,16 @@ public class JwtValidator extends OncePerRequestFilter {
 
         String jwt = request.getHeader(JwtConstant.JWT_HEADER);
 
-        //Bearer jwt
-
-        if (jwt != null) {
-            jwt = jwt.substring(7);
+        // Expect standard "Bearer <token>" format
+        if (jwt != null && jwt.startsWith("Bearer ")) {
+            String token = jwt.substring(7);
 
             try{
                 SecretKey key = Keys.hmacShaKeyFor(JwtConstant.JWT_SECRET.getBytes());
                 Claims claims = Jwts.parser()
                         .verifyWith(key)
                         .build()
-                        .parseClaimsJws(jwt)
+                        .parseClaimsJws(token)
                         .getPayload();
 
                 String email = String.valueOf(claims.get("email"));

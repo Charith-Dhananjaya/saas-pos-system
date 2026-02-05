@@ -49,7 +49,11 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Store getStoreByAdmin() throws UserException {
         User admin = userService.getCurrentUser();
-        return storeRepository.findByStoreAdminId(admin.getId());
+        Store store = storeRepository.findByStoreAdminId(admin.getId());
+        if (store == null) {
+            throw new UserException("No store found for current owner. Please create a store first.");
+        }
+        return store;
     }
 
     @Override
@@ -94,6 +98,10 @@ public class StoreServiceImpl implements StoreService {
         User currentUser = userService.getCurrentUser();
         if (currentUser == null) {
             throw new UserException("Permission not granted");
+        }
+
+        if (currentUser.getStore() == null) {
+            throw new UserException("No store assigned to current employee.");
         }
 
         return StoreMapper.toDTO(currentUser.getStore());
