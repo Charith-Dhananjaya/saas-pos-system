@@ -30,7 +30,7 @@ public class ShiftReportMapper {
                 .totalOrders(entity.getTotalOrders())
                 .cashier(UserMapper.toDTO(entity.getCashier()))
                 .cashierId(entity.getCashier() != null ? entity.getCashier().getId() : null)
-                .branchId(entity.getBranch() != null ? entity.getBranch().getId() : null)
+                .storeId(entity.getStore() != null ? entity.getStore().getId() : null)
                 .recentOrders(mapOrders(entity.getRecentOrders()))
                 .topSellingProducts(mapProducts(entity.getTopSellingProducts()))
                 .refunds(mapRefunds(entity.getRefunds()))

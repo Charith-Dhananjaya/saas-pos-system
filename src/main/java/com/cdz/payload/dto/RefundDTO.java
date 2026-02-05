@@ -27,9 +27,7 @@ public class RefundDTO {
     private UserDto cashier;
     private String cashierName;
 
-
-    private BranchDTO branch;
-    private Long branchId;
+    private Long storeId;
 
     private PaymentType paymentType;
 

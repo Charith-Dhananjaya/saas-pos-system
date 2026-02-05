@@ -21,7 +21,7 @@ public interface RefundService {
             LocalDateTime endDate
     ) throws Exception;
 
-    List<RefundDTO> getRefundByBranch(Long branchId) throws Exception;
+    List<RefundDTO> getRefundByStore(Long storeId) throws Exception;
 
     RefundDTO getRefundById(Long refundId) throws Exception;
 

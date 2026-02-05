@@ -20,7 +20,7 @@ public class Inventory {
     private Long id;
 
     @ManyToOne
-    private Branch branch;
+    private Store store;
 
     @ManyToOne
     private Product product;

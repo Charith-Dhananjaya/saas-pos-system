@@ -46,13 +46,10 @@ public class OrderMapper {
         }
 
 
-        Long branchId = (order.getBranch() != null) ? order.getBranch().getId() : null;
+        Long storeId = (order.getStore() != null) ? order.getStore().getId() : null;
         Long customerId = (order.getCustomer() != null) ? order.getCustomer().getId() : null;
 
-
         var cashierDto = (order.getCashier() != null) ? UserMapper.toDTO(order.getCashier()) : null;
-        var branchDto  = (order.getBranch()  != null) ? BranchMapper.toDTO(order.getBranch()) : null;
-
 
         var itemDTOs = (order.getItems() != null)
                 ? order.getItems().stream()
@@ -66,13 +63,13 @@ public class OrderMapper {
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
-                .branchId(branchId)
+                .storeId(storeId)
                 .customerId(customerId)
                 .cashier(cashierDto)
-                .branch(branchDto)
                 .customer(order.getCustomer())
 
                 .paymentType(order.getPaymentType())
+                .stripePaymentIntentId(order.getStripePaymentIntentId())
                 .items((List<OrderItemDTO>) itemDTOs)
                 .build();
     }

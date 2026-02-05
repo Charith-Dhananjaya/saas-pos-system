@@ -19,5 +19,5 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
     List<Refund> findByShiftReportId(Long id);
 
-    List<Refund> findByBranchId(Long id);
+    List<Refund> findByStoreId(Long storeId);
 }

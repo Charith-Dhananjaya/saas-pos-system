@@ -36,7 +36,7 @@ public class Refund {
     private User cashier;
 
     @ManyToOne
-    private Branch branch;
+    private Store store;
 
     private PaymentType  paymentType;
 

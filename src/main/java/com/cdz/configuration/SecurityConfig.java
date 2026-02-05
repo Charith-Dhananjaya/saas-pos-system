@@ -26,8 +26,10 @@ public class SecurityConfig {
 
         return http.sessionManagement(manegement ->
                         manegement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(Authorize -> Authorize.requestMatchers("/api/**")
-                        .authenticated().requestMatchers("/api/super-admin/**").hasRole("ADMIN")
+                .authorizeHttpRequests(Authorize -> Authorize
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()).addFilterBefore(new JwtValidator(), BasicAuthenticationFilter.class
                 ).csrf(AbstractHttpConfigurer::disable)
                 .cors(

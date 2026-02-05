@@ -26,6 +26,9 @@ public class Customer {
 
     private String phone;
 
+    @ManyToOne
+    private Store store;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

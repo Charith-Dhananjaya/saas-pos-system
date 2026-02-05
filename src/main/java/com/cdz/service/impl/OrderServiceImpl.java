@@ -7,6 +7,7 @@ import com.cdz.model.*;
 import com.cdz.payload.dto.OrderDTO;
 import com.cdz.repository.OrderRepository;
 import com.cdz.repository.ProductRepository;
+import com.cdz.service.BillingService;
 import com.cdz.service.OrderService;
 import com.cdz.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +27,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final UserService userService;
     private final ProductRepository productRepository;
+    private final BillingService billingService;
 
 
     @Override
@@ -33,14 +35,13 @@ public class OrderServiceImpl implements OrderService {
 
         User cashier = userService.getCurrentUser();
 
-        Branch branch = cashier.getBranch();
-
-        if(branch==null){
-            throw new Exception("Cashier's branch not found");
+        Store store = cashier.getStore();
+        if (store == null) {
+            throw new Exception("User's store not found");
         }
 
         Order order = Order.builder()
-                .branch(branch)
+                .store(store)
                 .cashier(cashier)
                 .customer(orderDTO.getCustomer())
                 .paymentType(orderDTO.getPaymentType())
@@ -64,6 +65,14 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(total);
         order.setItems(orderItems);
 
+        // Card payment: verify Stripe PaymentIntent succeeded before saving
+        if (orderDTO.getPaymentType() == PaymentType.CARD && orderDTO.getStripePaymentIntentId() != null && !orderDTO.getStripePaymentIntentId().isBlank()) {
+            if (!billingService.verifyPaymentSucceeded(orderDTO.getStripePaymentIntentId())) {
+                throw new Exception("Card payment not confirmed. Complete payment with Stripe first.");
+            }
+            order.setStripePaymentIntentId(orderDTO.getStripePaymentIntentId());
+        }
+
         Order savedOrder = orderRepository.save(order);
 
         return OrderMapper.toDTO(savedOrder);
@@ -79,15 +88,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDTO> getOrdersByBranch(
-            Long branchId,
+    public List<OrderDTO> getOrdersByStore(
+            Long storeId,
             Long customerId,
             Long cashierId,
             PaymentType paymentType,
             OrderStatus status
     ) throws Exception {
 
-        return orderRepository.findByBranchId(branchId).stream()
+        return orderRepository.findByStoreId(storeId).stream()
                 .filter(order -> customerId == null ||
                         (order.getCustomer() != null &&
                                 order.getCustomer().getId().equals(customerId)))
@@ -129,22 +138,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDTO> getTodayOrdersByBranch(Long branchId) throws Exception {
+    public List<OrderDTO> getTodayOrdersByStore(Long storeId) throws Exception {
 
         LocalDate today = LocalDate.now();
-        LocalDateTime start =  today.atStartOfDay();
+        LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
 
-        return orderRepository.findByBranchIdAndCreatedAtBetween(
-                branchId, start, end
-        ).stream()
+        return orderRepository.findByStoreIdAndCreatedAtBetween(storeId, start, end).stream()
                 .map(OrderMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderDTO> getTop5RecentOrdersByBranchId(Long branchId) throws Exception {
-        return orderRepository.findTop5ByBranchIdOrderByCreatedAtDesc(branchId).stream()
+    public List<OrderDTO> getTop5RecentOrdersByStoreId(Long storeId) throws Exception {
+        return orderRepository.findTop5ByStoreIdOrderByCreatedAtDesc(storeId).stream()
                 .map(OrderMapper::toDTO)
                 .collect(Collectors.toList());
     }

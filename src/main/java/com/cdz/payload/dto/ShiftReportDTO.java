@@ -23,9 +23,7 @@ public class ShiftReportDTO {
 
     private UserDto cashier;
     private Long cashierId;
-    private Long branchId;
-
-    private BranchDTO branch;
+    private Long storeId;
 
     private List<PaymentSummary> paymentSummaries;
 

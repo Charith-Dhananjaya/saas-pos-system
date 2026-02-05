@@ -31,7 +31,7 @@ public class ShiftReport {
     private User cashier;
 
     @ManyToOne
-    private Branch branch;
+    private Store store;
 
     @Transient
     private List<PaymentSummary> paymentSummaries;

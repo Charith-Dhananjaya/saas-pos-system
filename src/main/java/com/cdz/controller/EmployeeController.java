@@ -20,23 +20,11 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @PostMapping("/store/{storeId}")
-    public ResponseEntity<UserDto> createStoreEmployee(
+    public ResponseEntity<UserDto> createEmployee(
             @PathVariable Long storeId,
             @RequestBody UserDto userDto) throws Exception {
-
         UserDto employee = employeeService.createStoreEmployee(userDto, storeId);
         return ResponseEntity.ok(employee);
-
-    }
-
-    @PostMapping("/branch/{branchId}")
-    public ResponseEntity<UserDto> createBranchEmployee(
-            @PathVariable Long branchId,
-            @RequestBody UserDto userDto) throws Exception {
-
-        UserDto employee = employeeService.createBranchEmployee(userDto, branchId);
-        return ResponseEntity.ok(employee);
-
     }
 
     @PutMapping("/{id}")
@@ -60,22 +48,10 @@ public class EmployeeController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @GetMapping("/store/{id}")
-    public ResponseEntity<List<UserDto>> getStoreEmployee(
-            @PathVariable Long id,
-            @RequestParam(required = false)UserRole userRole) throws Exception {
-
-        List<UserDto> employee = employeeService.findStoreEmployees(id, userRole);
-        return ResponseEntity.ok(employee);
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<UserDto>> getEmployeesByStore(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) UserRole userRole) throws Exception {
+        return ResponseEntity.ok(employeeService.findStoreEmployees(storeId, userRole));
     }
-
-    @GetMapping("/branch/{id}")
-    public ResponseEntity<List<UserDto>> getBranchEmployee(
-            @PathVariable Long id,
-            @RequestParam(required = false)UserRole userRole) throws Exception {
-
-        List<UserDto> employee = employeeService.findBranchEmployees(id, userRole);
-        return ResponseEntity.ok(employee);
-    }
-
 }
