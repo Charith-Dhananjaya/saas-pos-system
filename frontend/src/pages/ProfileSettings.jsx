@@ -105,10 +105,6 @@ export default function ProfileSettings() {
             data.append('fullName', formData.fullName);
             data.append('phone', formData.phone);
             if (formData.password) {
-                // Backend currently doesn't support password update via this endpoint in the example logic, 
-                // but assuming it gets added or handled. 
-                // Note: The provided UserServiceImpl didn't implement password update logic yet, 
-                // but we'll send it in case.
                 data.append('password', formData.password);
             }
             if (selectedFile) {
@@ -150,32 +146,32 @@ export default function ProfileSettings() {
     if (fetching) {
         return (
             <div className="flex items-center justify-center p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
-                <p className="text-slate-400">Manage your account settings and preferences.</p>
+                <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
+                <p className="text-muted-foreground">Manage your account settings and preferences.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Profile Card */}
-                <Card className="bg-slate-900 border-slate-800 md:col-span-1 h-fit">
+                <Card className="bg-card border-border md:col-span-1 h-fit">
                     <CardHeader>
-                        <CardTitle className="text-white">Profile Image</CardTitle>
+                        <CardTitle className="text-foreground">Profile Image</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center text-center">
-                        <div className="relative h-32 w-32 rounded-full overflow-hidden mb-4 border-4 border-slate-800 bg-slate-800 group">
+                        <div className="relative h-32 w-32 rounded-full overflow-hidden mb-4 border-4 border-muted bg-muted group">
                             {previewUrl ? (
                                 <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
                             ) : currentImage ? (
                                 <img src={currentImage} alt="Profile" className="h-full w-full object-cover" />
                             ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-slate-800 text-slate-500">
+                                <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground">
                                     <User className="h-12 w-12" />
                                 </div>
                             )}
@@ -186,111 +182,111 @@ export default function ProfileSettings() {
                                 <Upload className="h-8 w-8 text-white" />
                             </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-white">{formData.fullName}</h3>
-                        <p className="text-sm text-slate-400">{formData.email}</p>
+                        <h3 className="text-lg font-semibold text-foreground">{formData.fullName}</h3>
+                        <p className="text-sm text-muted-foreground">{formData.email}</p>
                     </CardContent>
                 </Card>
 
                 {/* Form Card */}
-                <Card className="bg-slate-900 border-slate-800 md:col-span-2">
+                <Card className="bg-card border-border md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="text-white">Account Details</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardTitle className="text-foreground">Account Details</CardTitle>
+                        <CardDescription className="text-muted-foreground">
                             Update your personal information.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="fullName" className="text-slate-300">Full Name</Label>
+                                <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="fullName"
                                         name="fullName"
                                         value={formData.fullName}
                                         onChange={handleChange}
-                                        className="pl-9 bg-slate-950 border-slate-800 text-white"
+                                        className="pl-9 bg-background border-input text-foreground"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-slate-300">Email</Label>
+                                <Label htmlFor="email" className="text-foreground">Email</Label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="email"
                                         name="email"
                                         value={formData.email}
                                         disabled
-                                        className="pl-9 bg-slate-950/50 border-slate-800 text-slate-500 cursor-not-allowed"
+                                        className="pl-9 bg-muted border-input text-muted-foreground cursor-not-allowed"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-slate-300">Phone</Label>
+                                <Label htmlFor="phone" className="text-foreground">Phone</Label>
                                 <div className="relative">
-                                    <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="phone"
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        className="pl-9 bg-slate-950 border-slate-800 text-white"
+                                        className="pl-9 bg-background border-input text-foreground"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-slate-300">Profile Image</Label>
+                                <Label className="text-foreground">Profile Image</Label>
                                 <div className="flex gap-2 items-center">
                                     <Input
                                         ref={fileInputRef}
                                         type="file"
                                         accept="image/*"
                                         onChange={handleFileChange}
-                                        className="bg-slate-950 border-slate-800 text-white file:bg-slate-800 file:text-white file:border-0 file:rounded-md file:px-2 file:mr-4 file:text-sm hover:file:bg-slate-700"
+                                        className="bg-background border-input text-foreground file:bg-muted file:text-foreground file:border-0 file:rounded-md file:px-2 file:mr-4 file:text-sm hover:file:bg-accent"
                                     />
                                     {selectedFile && (
                                         <Button type="button" variant="ghost" size="icon" onClick={handleRemoveFile}>
-                                            <X className="h-4 w-4 text-slate-400 hover:text-red-500" />
+                                            <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                                         </Button>
                                     )}
                                 </div>
-                                <p className="text-xs text-slate-500">Click to upload a new profile image (Max 5MB).</p>
+                                <p className="text-xs text-muted-foreground">Click to upload a new profile image (Max 5MB).</p>
                             </div>
 
-                            <div className="pt-4 border-t border-slate-800">
-                                <h4 className="text-sm font-medium text-white mb-4">Change Password</h4>
+                            <div className="pt-4 border-t border-border">
+                                <h4 className="text-sm font-medium text-foreground mb-4">Change Password</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="password" className="text-slate-300">New Password</Label>
+                                        <Label htmlFor="password" className="text-foreground">New Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
                                                 id="password"
                                                 name="password"
                                                 type="password"
                                                 value={formData.password}
                                                 onChange={handleChange}
-                                                className="pl-9 bg-slate-950 border-slate-800 text-white"
+                                                className="pl-9 bg-background border-input text-foreground"
                                                 placeholder="Leave empty to keep current"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword" className="text-slate-300">Confirm New Password</Label>
+                                        <Label htmlFor="confirmPassword" className="text-foreground">Confirm New Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
                                                 id="confirmPassword"
                                                 name="confirmPassword"
                                                 type="password"
                                                 value={formData.confirmPassword}
                                                 onChange={handleChange}
-                                                className="pl-9 bg-slate-950 border-slate-800 text-white"
+                                                className="pl-9 bg-background border-input text-foreground"
                                                 placeholder="Confirm new password"
                                             />
                                         </div>
@@ -299,7 +295,7 @@ export default function ProfileSettings() {
                             </div>
 
                             <div className="pt-4 flex justify-end">
-                                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading}>
+                                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
                                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Save Changes
                                 </Button>
