@@ -32,30 +32,30 @@ const CHART_COLORS = ['#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#f472b6', '#f
 
 function KPICard({ title, value, icon: Icon, gradient, trend, trendLabel }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 transition-all duration-300 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 group">
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group">
       {/* Gradient accent */}
       <div className={`absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity bg-gradient-to-br ${gradient}`} />
 
       <div className="relative flex items-start justify-between">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-slate-400">{title}</p>
-          <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
           {trend !== undefined && (
             <div className="flex items-center gap-1">
               {trend >= 0 ? (
-                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
               ) : (
-                <ArrowDownRight className="h-3.5 w-3.5 text-rose-400" />
+                <ArrowDownRight className="h-3.5 w-3.5 text-rose-500" />
               )}
-              <span className={`text-xs font-medium ${trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <span className={`text-xs font-medium ${trend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {Math.abs(trend)}%
               </span>
-              {trendLabel && <span className="text-xs text-slate-500">{trendLabel}</span>}
+              {trendLabel && <span className="text-xs text-muted-foreground">{trendLabel}</span>}
             </div>
           )}
         </div>
-        <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${gradient} shadow-lg`}>
-          <Icon className="h-6 w-6 text-white" />
+        <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${gradient} shadow-lg text-white`}>
+          <Icon className="h-6 w-6" />
         </div>
       </div>
     </div>
@@ -64,16 +64,16 @@ function KPICard({ title, value, icon: Icon, gradient, trend, trendLabel }) {
 
 function ChartCard({ title, subtitle, icon: Icon, children, className = '' }) {
   return (
-    <div className={`rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 ${className}`}>
+    <div className={`rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-6 ${className}`}>
       <div className="flex items-center gap-3 mb-6">
         {Icon && (
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-            <Icon className="h-4 w-4 text-emerald-400" />
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Icon className="h-4 w-4 text-primary" />
           </div>
         )}
         <div>
-          <h3 className="text-sm font-semibold text-white">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
       {children}
@@ -82,11 +82,12 @@ function ChartCard({ title, subtitle, icon: Icon, children, className = '' }) {
 }
 
 const customTooltipStyle = {
-  backgroundColor: 'rgba(2, 6, 23, 0.95)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  backgroundColor: 'hsl(var(--card))',
+  border: '1px solid hsl(var(--border))',
   borderRadius: '12px',
   padding: '12px 16px',
-  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  color: 'hsl(var(--foreground))',
 };
 
 export default function Dashboard() {
@@ -151,8 +152,8 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-xl border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
-          <p className="text-sm text-slate-400">Loading analytics...</p>
+          <div className="h-12 w-12 rounded-xl border-2 border-primary/30 border-t-primary animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading analytics...</p>
         </div>
       </div>
     );
@@ -168,10 +169,10 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Welcome back, <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{user?.fullName?.split(' ')[0]}</span>
         </h1>
-        <p className="text-sm text-slate-400 mt-1">Here's what's happening with your store today</p>
+        <p className="text-sm text-muted-foreground mt-1">Here's what's happening with your store today</p>
       </div>
 
       {/* KPI Cards */}
@@ -220,23 +221,23 @@ export default function Dashboard() {
                     <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                   tickFormatter={(v) => new Date(v).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                   tickFormatter={(v) => `$${v}`}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
                   contentStyle={customTooltipStyle}
-                  labelStyle={{ color: '#e2e8f0', fontWeight: 600 }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
                   itemStyle={{ color: '#34d399' }}
                   formatter={(value) => [formatCurrency(value), 'Revenue']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -276,16 +277,16 @@ export default function Dashboard() {
                   </Pie>
                   <Tooltip
                     contentStyle={customTooltipStyle}
-                    labelStyle={{ color: '#e2e8f0' }}
-                    itemStyle={{ color: '#ccc' }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))' }}
                   />
                   <Legend
-                    wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }}
+                    wrapperStyle={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-slate-500">No payment data yet</p>
+              <p className="text-sm text-muted-foreground">No payment data yet</p>
             )}
           </div>
         </ChartCard>
@@ -298,31 +299,31 @@ export default function Dashboard() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={hourlySales} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="hour"
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={false}
                   tickLine={false}
                   interval={2}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `$${v}`}
                 />
                 <Tooltip
                   contentStyle={customTooltipStyle}
-                  labelStyle={{ color: '#e2e8f0', fontWeight: 600 }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
                   formatter={(value) => [formatCurrency(value), 'Sales']}
-                  cursor={{ fill: 'rgba(16,185,129,0.1)' }}
+                  cursor={{ fill: 'hsl(var(--primary) / 0.1)' }}
                 />
                 <Bar dataKey="sales" radius={[6, 6, 0, 0]} maxBarSize={28}>
                   {hourlySales.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={`rgba(16,185,129,${0.3 + (index / hourlySales.length) * 0.7})`}
+                      fill={`hsl(var(--primary) / ${0.3 + (index / hourlySales.length) * 0.7})`}
                     />
                   ))}
                 </Bar>
@@ -342,10 +343,10 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-white truncate">{product.name}</p>
-                    <p className="text-xs text-slate-400 ml-2">{product.unitsSold} sold</p>
+                    <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                    <p className="text-xs text-muted-foreground ml-2">{product.unitsSold} sold</p>
                   </div>
-                  <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-1000"
                       style={{
@@ -355,10 +356,10 @@ export default function Dashboard() {
                     />
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-emerald-400 ml-2">{formatCurrency(product.revenue)}</p>
+                <p className="text-sm font-semibold text-primary ml-2">{formatCurrency(product.revenue)}</p>
               </div>
             )) : (
-              <p className="text-sm text-slate-500 text-center py-8">No product data yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No product data yet</p>
             )}
           </div>
         </ChartCard>
@@ -366,23 +367,23 @@ export default function Dashboard() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+        <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-6 text-center">
           <p className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
             {formatCurrency(summary?.totalRevenue)}
           </p>
-          <p className="text-sm text-slate-400 mt-1">Total Revenue</p>
+          <p className="text-sm text-muted-foreground mt-1">Total Revenue</p>
         </div>
-        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+        <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-6 text-center">
           <p className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
             {summary?.totalOrders || 0}
           </p>
-          <p className="text-sm text-slate-400 mt-1">Total Orders</p>
+          <p className="text-sm text-muted-foreground mt-1">Total Orders</p>
         </div>
-        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+        <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-6 text-center">
           <p className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
             {formatCurrency(summary?.avgOrderValue)}
           </p>
-          <p className="text-sm text-slate-400 mt-1">Avg Order Value</p>
+          <p className="text-sm text-muted-foreground mt-1">Avg Order Value</p>
         </div>
       </div>
     </div>
