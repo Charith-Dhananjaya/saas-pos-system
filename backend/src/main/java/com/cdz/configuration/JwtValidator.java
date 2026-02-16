@@ -1,6 +1,5 @@
 package com.cdz.configuration;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -18,14 +17,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JwtValidator extends OncePerRequestFilter {
+
+    private final SecretKey key;
+
+    public JwtValidator(String jwtSecret) {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String jwt = request.getHeader(JwtConstant.JWT_HEADER);
 
@@ -33,8 +38,7 @@ public class JwtValidator extends OncePerRequestFilter {
         if (jwt != null && jwt.startsWith("Bearer ")) {
             String token = jwt.substring(7);
 
-            try{
-                SecretKey key = Keys.hmacShaKeyFor(JwtConstant.JWT_SECRET.getBytes());
+            try {
                 Claims claims = Jwts.parser()
                         .verifyWith(key)
                         .build()
@@ -42,7 +46,6 @@ public class JwtValidator extends OncePerRequestFilter {
                         .getPayload();
 
                 String email = String.valueOf(claims.get("email"));
-
                 String authorities = String.valueOf(claims.get("authorities"));
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
@@ -54,7 +57,5 @@ public class JwtValidator extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-
-
     }
 }

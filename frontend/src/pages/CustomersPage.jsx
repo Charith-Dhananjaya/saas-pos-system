@@ -110,11 +110,11 @@ export default function CustomersPage() {
     }
   };
 
-  const filteredCustomers = customers.filter(c =>
+  const filteredCustomers = Array.isArray(customers) ? customers.filter(c =>
     c.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.phone?.includes(searchQuery)
-  );
+  ) : [];
 
   if (loading) {
     return (

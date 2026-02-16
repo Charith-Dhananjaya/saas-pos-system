@@ -2,8 +2,9 @@ package com.cdz.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -17,22 +18,30 @@ import java.util.Set;
 @Service
 public class JwtProvider {
 
-    static SecretKey key = Keys.hmacShaKeyFor(JwtConstant.JWT_SECRET.getBytes());
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration-ms:86400000}")
+    private long expirationMs;
+
+    private SecretKey key;
+
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateToken(Authentication authentication) {
-
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-        String roles = popolateAuthorities(authorities);
+        String roles = populateAuthorities(authorities);
 
         return Jwts.builder()
                 .issuedAt(new Date())
-                .expiration(new Date(new Date().getTime() + 86400000))
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .claim("email", authentication.getName())
                 .claim("authorities", roles)
                 .signWith(key)
                 .compact();
-
     }
 
     public String getEmailFromToken(String jwt) {
@@ -44,11 +53,9 @@ public class JwtProvider {
                 .getPayload();
 
         return String.valueOf(claims.get("email"));
-
     }
 
-    private String popolateAuthorities(Collection<? extends GrantedAuthority> authorities) {
-
+    private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<String> auths = new HashSet<>();
         for (GrantedAuthority authority : authorities) {
             auths.add(authority.getAuthority());

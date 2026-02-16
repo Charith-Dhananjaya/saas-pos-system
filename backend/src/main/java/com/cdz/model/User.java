@@ -26,13 +26,13 @@ public class User {
     @Email(message = "Email should be valid")
     private String email;
 
-
     @ManyToOne
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("storeAdmin")
     private Store store;
 
     private String phone;
 
-    @Column(length = 50,nullable = false)
+    @Column(length = 50, nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
@@ -43,13 +43,16 @@ public class User {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
 
+    @Column(length = 1000)
+    private String profileImage;
+
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 

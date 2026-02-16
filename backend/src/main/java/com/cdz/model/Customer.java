@@ -1,6 +1,5 @@
 package com.cdz.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,18 +26,19 @@ public class Customer {
     private String phone;
 
     @ManyToOne
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("storeAdmin")
     private Store store;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 

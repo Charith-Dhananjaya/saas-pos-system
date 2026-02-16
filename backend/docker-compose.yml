@@ -1,17 +1,27 @@
 version: "3.9"
+
 services:
   mysql:
     image: mysql:8.0
     container_name: pos_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234}
       MYSQL_DATABASE: pos_bs
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p1234"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-uroot",
+          "-p${DB_PASSWORD:-1234}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -23,12 +33,44 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pos_bs
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 1234
+      DB_URL: jdbc:mysql://mysql:3306/pos_bs?createDatabaseIfNotExist=true
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-1234}
       SERVER_PORT: 5000
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-real-secret-at-least-32-chars}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-}
+      STRIPE_CURRENCY: ${STRIPE_CURRENCY:-usd}
     ports:
       - "5000:5000"
 
+  # ── Observability ──────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: pos_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pos_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
 volumes:
   mysql_data:
+  prometheus_data:
+  grafana_data:

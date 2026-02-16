@@ -14,10 +14,11 @@ import InventoryPage from './pages/InventoryPage';
 import ShiftReportsPage from './pages/ShiftReportsPage';
 import RefundsPage from './pages/RefundsPage';
 import StoreSettingsPage from './pages/StoreSettingsPage';
+import ProfileSettings from './pages/ProfileSettings';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -25,13 +26,13 @@ const PrivateRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -39,7 +40,7 @@ const PublicRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
@@ -48,7 +49,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
-      
+
       <Route path="/" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
@@ -61,6 +62,7 @@ function AppRoutes() {
         <Route path="shift-reports" element={<ShiftReportsPage />} />
         <Route path="refunds" element={<RefundsPage />} />
         <Route path="store-settings" element={<StoreSettingsPage />} />
+        <Route path="profile-settings" element={<ProfileSettings />} />
       </Route>
     </Routes>
   );

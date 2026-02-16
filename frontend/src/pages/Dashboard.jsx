@@ -1,225 +1,389 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { storeAPI, orderAPI, shiftReportAPI, customerAPI } from '../lib/api';
-import { useToast } from '../components/ui/use-toast';
-import { DollarSign, ShoppingCart, Users, TrendingUp, Loader2 } from 'lucide-react';
+import { analyticsAPI, storeAPI, orderAPI } from '../lib/api';
+import {
+  DollarSign,
+  ShoppingCart,
+  Users,
+  Package,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  BarChart3,
+  Activity,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
+
+const CHART_COLORS = ['#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#f472b6', '#fb7185'];
+
+function KPICard({ title, value, icon: Icon, gradient, trend, trendLabel }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 transition-all duration-300 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 group">
+      {/* Gradient accent */}
+      <div className={`absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity bg-gradient-to-br ${gradient}`} />
+
+      <div className="relative flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-400">{title}</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
+          {trend !== undefined && (
+            <div className="flex items-center gap-1">
+              {trend >= 0 ? (
+                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+              ) : (
+                <ArrowDownRight className="h-3.5 w-3.5 text-rose-400" />
+              )}
+              <span className={`text-xs font-medium ${trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {Math.abs(trend)}%
+              </span>
+              {trendLabel && <span className="text-xs text-slate-500">{trendLabel}</span>}
+            </div>
+          )}
+        </div>
+        <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${gradient} shadow-lg`}>
+          <Icon className="h-6 w-6 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, subtitle, icon: Icon, children, className = '' }) {
+  return (
+    <div className={`rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 ${className}`}>
+      <div className="flex items-center gap-3 mb-6">
+        {Icon && (
+          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <Icon className="h-4 w-4 text-emerald-400" />
+          </div>
+        )}
+        <div>
+          <h3 className="text-sm font-semibold text-white">{title}</h3>
+          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const customTooltipStyle = {
+  backgroundColor: 'rgba(2, 6, 23, 0.95)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '12px',
+  padding: '12px 16px',
+  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [stats, setStats] = useState({
-    todaySales: 0,
-    todayOrders: 0,
-    totalCustomers: 0,
-    activeShift: null,
-  });
+  const [storeId, setStoreId] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [revenueTrend, setRevenueTrend] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [hourlySales, setHourlySales] = useState([]);
+  const [orderStats, setOrderStats] = useState(null);
+  const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [store, setStore] = useState(null);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Get store info
-      let storeData;
+    const fetchStore = async () => {
       try {
+        let res;
         if (user?.role === 'ROLE_OWNER') {
-          const response = await storeAPI.getByAdmin();
-          storeData = response.data;
+          res = await storeAPI.getByAdmin();
         } else {
-          const response = await storeAPI.getByEmployee();
-          storeData = response.data;
+          res = await storeAPI.getByEmployee();
         }
-      } catch (error) {
-        // Gracefully handle "no store yet" / onboarding state
-        if (error.response?.status === 400 || error.response?.status === 404) {
-          setStore(null);
-          setStats({
-            todaySales: 0,
-            todayOrders: 0,
-            totalCustomers: 0,
-            activeShift: null,
-          });
-          return;
+        if (res.data?.id) {
+          setStoreId(res.data.id);
         }
-        throw error;
+      } catch (e) {
+        console.error('Error fetching store:', e);
       }
-      setStore(storeData);
+    };
+    fetchStore();
+  }, [user]);
 
-      if (storeData?.id) {
-        // Get today's orders
-        const ordersResponse = await orderAPI.getTodayOrders(storeData.id);
-        const todayOrders = ordersResponse.data || [];
-        
-        const todaySales = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-
-        // Get total customers for this store
-        let totalCustomers = 0;
-        try {
-          const customersResponse = await customerAPI.getAll();
-          const allCustomers = customersResponse.data || [];
-          totalCustomers = allCustomers.filter(
-            (customer) => customer.store && customer.store.id === storeData.id
-          ).length;
-        } catch (error) {
-          // If customer fetch fails, keep totalCustomers as 0
-        }
-        
-        // Get current shift
-        let activeShift = null;
-        try {
-          const shiftResponse = await shiftReportAPI.getCurrentShift();
-          activeShift = shiftResponse.data;
-        } catch (error) {
-          // No active shift
-        }
-
-        setStats({
-          todaySales,
-          todayOrders: todayOrders.length,
-          totalCustomers,
-          activeShift,
-        });
+  useEffect(() => {
+    if (!storeId) return;
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      try {
+        const [summaryRes, trendRes, topRes, hourlyRes, statsRes, recentRes] = await Promise.all([
+          analyticsAPI.getDashboardSummary(storeId),
+          analyticsAPI.getRevenueTrend(storeId, 14),
+          analyticsAPI.getTopProducts(storeId, 6),
+          analyticsAPI.getHourlySales(storeId),
+          analyticsAPI.getOrderStats(storeId),
+          orderAPI.getRecentByStore(storeId),
+        ]);
+        setSummary(summaryRes.data);
+        setRevenueTrend(trendRes.data);
+        setTopProducts(topRes.data);
+        setHourlySales(hourlyRes.data);
+        setOrderStats(statsRes.data);
+        setRecentOrders(recentRes.data || []);
+      } catch (e) {
+        console.error('Error loading analytics:', e);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchAnalytics();
+  }, [storeId]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-xl border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+          <p className="text-sm text-slate-400">Loading analytics...</p>
+        </div>
       </div>
     );
   }
 
+  const formatCurrency = (val) => `$${(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const paymentTypeData = orderStats?.byPaymentType
+    ? Object.entries(orderStats.byPaymentType).map(([name, value]) => ({ name, value }))
+    : [];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Welcome */}
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Welcome back, {user?.fullName}
-        </p>
+        <h1 className="text-2xl font-bold text-white">
+          Welcome back, <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{user?.fullName?.split(' ')[0]}</span>
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">Here's what's happening with your store today</p>
       </div>
 
-      {!store && (
-        <div className="mb-4 p-4 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40">
-          <h2 className="font-semibold text-lg">Set up your first store</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            You don&apos;t have a store configured yet. Create a store to start using POS, inventory, and employees.
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KPICard
+          title="Today's Revenue"
+          value={formatCurrency(summary?.todayRevenue)}
+          icon={DollarSign}
+          gradient="from-emerald-500 to-teal-600"
+        />
+        <KPICard
+          title="Today's Orders"
+          value={summary?.todayOrders || 0}
+          icon={ShoppingCart}
+          gradient="from-sky-500 to-blue-600"
+        />
+        <KPICard
+          title="Total Customers"
+          value={summary?.totalCustomers || 0}
+          icon={Users}
+          gradient="from-amber-500 to-orange-600"
+        />
+        <KPICard
+          title="Total Products"
+          value={summary?.totalProducts || 0}
+          icon={Package}
+          gradient="from-rose-500 to-pink-600"
+        />
+      </div>
+
+      {/* Charts Row 1 */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        {/* Revenue Trend - wide */}
+        <ChartCard
+          title="Revenue Trend"
+          subtitle="Last 14 days"
+          icon={TrendingUp}
+          className="xl:col-span-2"
+        >
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tickFormatter={(v) => new Date(v).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tickFormatter={(v) => `$${v}`}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={customTooltipStyle}
+                  labelStyle={{ color: '#e2e8f0', fontWeight: 600 }}
+                  itemStyle={{ color: '#34d399' }}
+                  formatter={(value) => [formatCurrency(value), 'Revenue']}
+                  labelFormatter={(label) => new Date(label).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#10b981"
+                  strokeWidth={2.5}
+                  fill="url(#colorRevenue)"
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#10b981', stroke: '#064e3b', strokeWidth: 2 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
+
+        {/* Payment Type Pie */}
+        <ChartCard title="Payment Methods" subtitle="Distribution" icon={BarChart3}>
+          <div className="h-72 flex items-center justify-center">
+            {paymentTypeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={paymentTypeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {paymentTypeData.map((entry, index) => (
+                      <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={customTooltipStyle}
+                    labelStyle={{ color: '#e2e8f0' }}
+                    itemStyle={{ color: '#ccc' }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-slate-500">No payment data yet</p>
+            )}
+          </div>
+        </ChartCard>
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {/* Hourly Sales */}
+        <ChartCard title="Today's Sales by Hour" subtitle="Hourly distribution" icon={Activity}>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={hourlySales} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis
+                  dataKey="hour"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={2}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <Tooltip
+                  contentStyle={customTooltipStyle}
+                  labelStyle={{ color: '#e2e8f0', fontWeight: 600 }}
+                  formatter={(value) => [formatCurrency(value), 'Sales']}
+                  cursor={{ fill: 'rgba(16,185,129,0.1)' }}
+                />
+                <Bar dataKey="sales" radius={[6, 6, 0, 0]} maxBarSize={28}>
+                  {hourlySales.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={`rgba(16,185,129,${0.3 + (index / hourlySales.length) * 0.7})`}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
+
+        {/* Top Products */}
+        <ChartCard title="Top Products" subtitle="By units sold" icon={Package}>
+          <div className="space-y-3">
+            {topProducts.length > 0 ? topProducts.map((product, index) => (
+              <div key={product.name} className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`, color: CHART_COLORS[index % CHART_COLORS.length] }}>
+                  {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium text-white truncate">{product.name}</p>
+                    <p className="text-xs text-slate-400 ml-2">{product.unitsSold} sold</p>
+                  </div>
+                  <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${topProducts.length > 0 ? (product.unitsSold / topProducts[0].unitsSold) * 100 : 0}%`,
+                        backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-sm font-semibold text-emerald-400 ml-2">{formatCurrency(product.revenue)}</p>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-500 text-center py-8">No product data yet</p>
+            )}
+          </div>
+        </ChartCard>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+          <p className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+            {formatCurrency(summary?.totalRevenue)}
           </p>
-          <a
-            href="/store-settings"
-            className="inline-flex mt-3 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            Go to Store Settings
-          </a>
+          <p className="text-sm text-slate-400 mt-1">Total Revenue</p>
         </div>
-      )}
-
-      {store && (
-        <div className="mb-4 p-4 bg-primary/10 rounded-lg">
-          <h2 className="font-semibold text-lg">{store.brand}</h2>
-          <p className="text-sm text-muted-foreground">{store.description}</p>
+        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+          <p className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
+            {summary?.totalOrders || 0}
+          </p>
+          <p className="text-sm text-slate-400 mt-1">Total Orders</p>
         </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.todaySales.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Total revenue today</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.todayOrders}</div>
-            <p className="text-xs text-muted-foreground">Orders processed</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Shift</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.activeShift ? 'Active' : 'None'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeShift ? 'Shift in progress' : 'No active shift'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Store Status</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold capitalize">
-              {store?.status || 'N/A'}
-            </div>
-            <p className="text-xs text-muted-foreground">Current status</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <a href="/pos" className="block p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-              <div className="font-medium">Start New Sale</div>
-              <div className="text-sm text-muted-foreground">Open POS interface</div>
-            </a>
-            <a href="/products" className="block p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-              <div className="font-medium">Manage Products</div>
-              <div className="text-sm text-muted-foreground">Add or edit products</div>
-            </a>
-            <a href="/orders" className="block p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-              <div className="font-medium">View Orders</div>
-              <div className="text-sm text-muted-foreground">Order history</div>
-            </a>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">No recent activity</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl border border-white/5 bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+          <p className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+            {formatCurrency(summary?.avgOrderValue)}
+          </p>
+          <p className="text-sm text-slate-400 mt-1">Avg Order Value</p>
+        </div>
       </div>
     </div>
   );

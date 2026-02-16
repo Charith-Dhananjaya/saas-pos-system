@@ -25,11 +25,15 @@ public class OrderDTO {
 
     private UserDto cashier;
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("store")
     private Customer customer;
 
     private PaymentType paymentType;
 
-    /** When paymentType is CARD, set after Stripe confirms payment (for saving and refunds). */
+    /**
+     * When paymentType is CARD, set after Stripe confirms payment (for saving and
+     * refunds).
+     */
     private String stripePaymentIntentId;
 
     private List<OrderItemDTO> items;

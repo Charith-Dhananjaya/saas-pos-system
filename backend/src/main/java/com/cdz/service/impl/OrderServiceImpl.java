@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -28,7 +27,6 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final BillingService billingService;
-
 
     @Override
     public OrderDTO createOrder(OrderDTO orderDTO) throws Exception {
@@ -58,15 +56,15 @@ public class OrderServiceImpl implements OrderService {
                             .price(product.getSellingPrice() * itemDto.getQuantity())
                             .order(order)
                             .build();
-                }
-        ).toList();
+                }).toList();
 
         double total = orderItems.stream().mapToDouble(OrderItem::getPrice).sum();
         order.setTotalAmount(total);
         order.setItems(orderItems);
 
         // Card payment: verify Stripe PaymentIntent succeeded before saving
-        if (orderDTO.getPaymentType() == PaymentType.CARD && orderDTO.getStripePaymentIntentId() != null && !orderDTO.getStripePaymentIntentId().isBlank()) {
+        if (orderDTO.getPaymentType() == PaymentType.CARD && orderDTO.getStripePaymentIntentId() != null
+                && !orderDTO.getStripePaymentIntentId().isBlank()) {
             if (!billingService.verifyPaymentSucceeded(orderDTO.getStripePaymentIntentId())) {
                 throw new Exception("Card payment not confirmed. Complete payment with Stripe first.");
             }
@@ -77,7 +75,6 @@ public class OrderServiceImpl implements OrderService {
 
         return OrderMapper.toDTO(savedOrder);
     }
-
 
     @Override
     public OrderDTO getOrderById(Long id) throws Exception {
@@ -93,10 +90,9 @@ public class OrderServiceImpl implements OrderService {
             Long customerId,
             Long cashierId,
             PaymentType paymentType,
-            OrderStatus status
-    ) throws Exception {
+            OrderStatus status) throws Exception {
 
-        return orderRepository.findByStoreId(storeId).stream()
+        return orderRepository.findByStoreIdOrderByCreatedAtDesc(storeId).stream()
                 .filter(order -> customerId == null ||
                         (order.getCustomer() != null &&
                                 order.getCustomer().getId().equals(customerId)))
@@ -108,7 +104,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderMapper::toDTO)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public List<OrderDTO> getOrdersByCashier(Long cashierId) {
@@ -162,7 +157,6 @@ public class OrderServiceImpl implements OrderService {
         Order existing = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("order not found with id " + id));
 
-
         if (orderDTO.getPaymentType() != null) {
             existing.setPaymentType(orderDTO.getPaymentType());
         }
@@ -172,7 +166,6 @@ public class OrderServiceImpl implements OrderService {
             existing.setCustomer(orderDTO.getCustomer());
         }
 
-
         if (orderDTO.getItems() != null && !orderDTO.getItems().isEmpty()) {
             List<OrderItem> updatedItems = orderDTO.getItems().stream()
                     .map(itemDto -> {
@@ -181,7 +174,8 @@ public class OrderServiceImpl implements OrderService {
                             throw new EntityNotFoundException("productId is required for each item");
                         }
                         Product product = productRepository.findById(itemDto.getProductId())
-                                .orElseThrow(() -> new EntityNotFoundException("product not found: " + itemDto.getProductId()));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                        "product not found: " + itemDto.getProductId()));
 
                         return OrderItem.builder()
                                 .id(itemDto.getId())
@@ -195,11 +189,9 @@ public class OrderServiceImpl implements OrderService {
 
             existing.setItems(updatedItems);
 
-
             double total = updatedItems.stream().mapToDouble(OrderItem::getPrice).sum();
             existing.setTotalAmount(total);
         }
-
 
         Order saved = orderRepository.save(existing);
         return OrderMapper.toDTO(saved);

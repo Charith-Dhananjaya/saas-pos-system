@@ -181,10 +181,10 @@ export default function ProductsPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Products</h1>
-        <div className="mt-2 p-4 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-2 p-4 rounded-lg border border-dashed border-emerald-500/20 bg-emerald-500/10">
+          <p className="text-sm text-emerald-200">
             You don&apos;t have a store yet. Create a store in{' '}
-            <a href="/store-settings" className="font-medium text-primary hover:underline">
+            <a href="/store-settings" className="font-medium text-emerald-400 hover:underline hover:text-emerald-300">
               Store Settings
             </a>{' '}
             before managing products.
@@ -210,8 +210,8 @@ export default function ProductsPage() {
       {store && (
         <Card>
           <CardContent className="p-6">
-            <CategoryManager 
-              storeId={store.id} 
+            <CategoryManager
+              storeId={store.id}
               onCategoryChange={(cats) => setCategories(cats)}
             />
           </CardContent>

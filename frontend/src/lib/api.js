@@ -47,6 +47,11 @@ export const authAPI = {
 export const userAPI = {
   getProfile: () => api.get('/api/user/profile'),
   getUserById: (id) => api.get(`/api/user/${id}`),
+  updateProfile: (data) => {
+    // If data is FormData, let the browser set the Content-Type with boundary
+    const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    return api.put('/api/user/profile', data, config);
+  },
 };
 
 // Store APIs
@@ -132,7 +137,7 @@ export const employeeAPI = {
 // Billing APIs (Stripe)
 export const billingAPI = {
   createPaymentIntent: (amountCents) => api.post('/api/billing/create-payment-intent', { amountCents }),
-  refund: (paymentIntentId, amountCents, reason) => 
+  refund: (paymentIntentId, amountCents, reason) =>
     api.post('/api/billing/refund', { paymentIntentId, amountCents, reason }),
 };
 
@@ -144,9 +149,9 @@ export const refundAPI = {
   getByCashier: (cashierId) => api.get(`/api/refunds/cashier/${cashierId}`),
   getByStore: (storeId) => api.get(`/api/refunds/store/${storeId}`),
   getByShift: (shiftId) => api.get(`/api/refunds/shift/${shiftId}`),
-  getByCashierAndDateRange: (cashierId, startDate, endDate) => 
-    api.get(`/api/refunds/cashier/${cashierId}/range`, { 
-      params: { startDate, endDate } 
+  getByCashierAndDateRange: (cashierId, startDate, endDate) =>
+    api.get(`/api/refunds/cashier/${cashierId}/range`, {
+      params: { startDate, endDate }
     }),
   delete: (id) => api.delete(`/api/refunds/${id}`),
 };
@@ -158,9 +163,17 @@ export const shiftReportAPI = {
   getCurrentShift: () => api.get('/api/shift-report/current'),
   getByCashier: (cashierId) => api.get(`/api/shift-report/cashier/${cashierId}`),
   getByStore: (storeId) => api.get(`/api/shift-report/store/${storeId}`),
-  getByCashierAndDate: (cashierId, date) => 
+  getByCashierAndDate: (cashierId, date) =>
     api.get(`/api/shift-report/cashier/${cashierId}/by-date`, { params: { date } }),
   getById: (id) => api.get(`/api/shift-report/${id}`),
+};
+
+export const analyticsAPI = {
+  getDashboardSummary: (storeId) => api.get(`/api/analytics/summary/${storeId}`),
+  getRevenueTrend: (storeId, days = 30) => api.get(`/api/analytics/revenue-trend/${storeId}`, { params: { days } }),
+  getTopProducts: (storeId, limit = 10) => api.get(`/api/analytics/top-products/${storeId}`, { params: { limit } }),
+  getOrderStats: (storeId) => api.get(`/api/analytics/order-stats/${storeId}`),
+  getHourlySales: (storeId) => api.get(`/api/analytics/hourly-sales/${storeId}`),
 };
 
 export default api;

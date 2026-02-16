@@ -51,7 +51,7 @@ export default function OrdersPage() {
         if (filters.orderStatus !== 'all') filterParams.orderStatus = filters.orderStatus;
 
         const response = await orderAPI.getByStore(storeData.id, filterParams);
-        setOrders(response.data || []);
+        setOrders(Array.isArray(response.data) ? response.data : []);
       }
     } catch (error) {
       console.error('Error loading orders:', error);
@@ -77,10 +77,10 @@ export default function OrdersPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Orders</h1>
-        <div className="mt-2 p-4 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-2 p-4 rounded-lg border border-dashed border-emerald-500/20 bg-emerald-500/10">
+          <p className="text-sm text-emerald-200">
             No store found yet. Create a store in{' '}
-            <a href="/store-settings" className="font-medium text-primary hover:underline">
+            <a href="/store-settings" className="font-medium text-emerald-400 hover:underline hover:text-emerald-300">
               Store Settings
             </a>{' '}
             before viewing orders.
@@ -102,7 +102,7 @@ export default function OrdersPage() {
             value={filters.paymentType}
             onValueChange={(value) => setFilters({ ...filters, paymentType: value })}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] text-slate-900 dark:text-gray-100">
               <SelectValue placeholder="Payment Type" />
             </SelectTrigger>
             <SelectContent>
@@ -116,7 +116,7 @@ export default function OrdersPage() {
             value={filters.orderStatus}
             onValueChange={(value) => setFilters({ ...filters, orderStatus: value })}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] text-slate-900 dark:text-gray-100">
               <SelectValue placeholder="Order Status" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +129,7 @@ export default function OrdersPage() {
       </div>
 
       <div className="grid gap-4">
-        {orders.length === 0 ? (
+        {!Array.isArray(orders) || orders.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
@@ -144,11 +144,10 @@ export default function OrdersPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-2">
                       <h3 className="font-semibold text-lg">Order #{order.id}</h3>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.paymentType === 'CASH' ? 'bg-green-100 text-green-800' :
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${order.paymentType === 'CASH' ? 'bg-green-100 text-green-800' :
                         order.paymentType === 'CARD' ? 'bg-blue-100 text-blue-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
+                          'bg-purple-100 text-purple-800'
+                        }`}>
                         {order.paymentType}
                       </span>
                     </div>

@@ -1,6 +1,5 @@
 package com.cdz.model;
 
-
 import com.cdz.domain.StoreStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +22,7 @@ public class Store {
     private String brand;
 
     @OneToOne
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("store")
     private User storeAdmin;
 
     private String description;
@@ -32,7 +32,6 @@ public class Store {
     @Enumerated(EnumType.STRING)
     private StoreStatus status;
 
-
     @Embedded
     private StoreContact contact = new StoreContact();
 
@@ -40,13 +39,13 @@ public class Store {
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
         status = StoreStatus.PENDING;
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 

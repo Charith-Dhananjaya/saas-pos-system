@@ -98,7 +98,7 @@ export default function POSPage() {
 
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.product.id === product.id);
-    
+
     if (existingItem) {
       setCart(cart.map(item =>
         item.product.id === product.id
@@ -166,9 +166,9 @@ export default function POSPage() {
       // Note: For CARD payments, Stripe integration would be handled here
       // For now, we'll create the order with the payment type
       // Full Stripe integration can be added later with proper payment confirmation flow
-      
+
       const response = await orderAPI.create(orderData);
-      
+
       toast({
         title: "Success",
         description: "Order created successfully!",
@@ -217,10 +217,10 @@ export default function POSPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">POS</h1>
-        <div className="mt-2 p-4 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-2 p-4 rounded-lg border border-dashed border-emerald-500/20 bg-emerald-500/10">
+          <p className="text-sm text-emerald-200">
             You don&apos;t have a store yet. Create a store in{' '}
-            <a href="/store-settings" className="font-medium text-primary hover:underline">
+            <a href="/store-settings" className="font-medium text-emerald-400 hover:underline hover:text-emerald-300">
               Store Settings
             </a>{' '}
             before processing sales.

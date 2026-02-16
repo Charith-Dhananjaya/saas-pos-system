@@ -1,0 +1,60 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.cdz:cdz-pos-system:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.scope' for org.projectlombok:lombok:jar must be one of [provided, compile, runtime, test, system] but is 'annotationProcessor'. @ line 98, column 20
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -----------------------< com.cdz:cdz-pos-system >-----------------------
+[INFO] Building cdz-pos-system 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ cdz-pos-system ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ cdz-pos-system ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 96 source files with javac [debug parameters release 21] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/Learnings/Springboot/saas-pos-system/backend/src/main/java/com/cdz/config/DataSeeder.java:[3,22] cannot find symbol
+  symbol:   class PaymentMethod
+  location: package com.cdz.domain
+[ERROR] /F:/Learnings/Springboot/saas-pos-system/backend/src/main/java/com/cdz/config/DataSeeder.java:[4,22] cannot find symbol
+  symbol:   class PaymentStatus
+  location: package com.cdz.domain
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.538 s
+[INFO] Finished at: 2026-02-16T11:22:14+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project cdz-pos-system: Compilation failure: Compilation failure: 
+[ERROR] /F:/Learnings/Springboot/saas-pos-system/backend/src/main/java/com/cdz/config/DataSeeder.java:[3,22] cannot find symbol
+[ERROR]   symbol:   class PaymentMethod
+[ERROR]   location: package com.cdz.domain
+[ERROR] /F:/Learnings/Springboot/saas-pos-system/backend/src/main/java/com/cdz/config/DataSeeder.java:[4,22] cannot find symbol
+[ERROR]   symbol:   class PaymentStatus
+[ERROR]   location: package com.cdz.domain
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

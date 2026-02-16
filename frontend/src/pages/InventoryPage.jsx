@@ -164,10 +164,10 @@ export default function InventoryPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Inventory</h1>
-        <div className="mt-2 p-4 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-2 p-4 rounded-lg border border-dashed border-emerald-500/20 bg-emerald-500/10">
+          <p className="text-sm text-emerald-200">
             No store found for this account yet. Create a store in{' '}
-            <a href="/store-settings" className="font-medium text-primary hover:underline">
+            <a href="/store-settings" className="font-medium text-emerald-400 hover:underline hover:text-emerald-300">
               Store Settings
             </a>{' '}
             before managing inventory.
@@ -203,9 +203,8 @@ export default function InventoryPage() {
                     SKU: {inv.product?.sku || 'N/A'}
                   </p>
                   <div className="mt-2">
-                    <span className={`text-2xl font-bold ${
-                      inv.quantity <= 10 ? 'text-destructive' : 'text-primary'
-                    }`}>
+                    <span className={`text-2xl font-bold ${inv.quantity <= 10 ? 'text-destructive' : 'text-primary'
+                      }`}>
                       {inv.quantity}
                     </span>
                     <span className="text-sm text-muted-foreground ml-2">units</span>
