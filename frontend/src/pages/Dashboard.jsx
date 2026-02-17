@@ -99,6 +99,7 @@ export default function Dashboard() {
   const [hourlySales, setHourlySales] = useState([]);
   const [orderStats, setOrderStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
+  const [todayProducts, setTodayProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,13 +126,14 @@ export default function Dashboard() {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const [summaryRes, trendRes, topRes, hourlyRes, statsRes, recentRes] = await Promise.all([
+        const [summaryRes, trendRes, topRes, hourlyRes, statsRes, recentRes, todayRes] = await Promise.all([
           analyticsAPI.getDashboardSummary(storeId),
           analyticsAPI.getRevenueTrend(storeId, 14),
           analyticsAPI.getTopProducts(storeId, 6),
           analyticsAPI.getHourlySales(storeId),
           analyticsAPI.getOrderStats(storeId),
           orderAPI.getRecentOrders(storeId),
+          analyticsAPI.getTopProducts(storeId, 20, 'TODAY'),
         ]);
         setSummary(summaryRes.data);
         setRevenueTrend(trendRes.data);
@@ -139,6 +141,7 @@ export default function Dashboard() {
         setHourlySales(hourlyRes.data);
         setOrderStats(statsRes.data);
         setRecentOrders(recentRes.data || []);
+        setTodayProducts(todayRes.data || []);
       } catch (e) {
         console.error('Error loading analytics:', e);
       } finally {
@@ -172,11 +175,19 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Welcome */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Welcome back, <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{user?.fullName?.split(' ')[0]}</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">Here's what's happening with your store today</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome back, <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{user?.fullName?.split(' ')[0]}</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Here's what's happening with your store today</p>
+        </div>
+        <button
+          onClick={() => setStoreId(prev => prev)} // Trigger re-fetch
+          className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors"
+        >
+          Refresh Data
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -200,7 +211,7 @@ export default function Dashboard() {
           gradient="from-amber-500 to-orange-600"
         />
         <KPICard
-          title="Total Products"
+          title="Total Items Sold"
           value={summary?.totalProducts || 0}
           icon={Package}
           gradient="from-rose-500 to-pink-600"
@@ -336,10 +347,10 @@ export default function Dashboard() {
           </div>
         </ChartCard>
 
-        {/* Top Products */}
-        <ChartCard title="Top Products" subtitle="By units sold" icon={Package}>
-          <div className="space-y-3">
-            {topProducts.length > 0 ? topProducts.map((product, index) => (
+        {/* Products Sold Today */}
+        <ChartCard title="Products Sold Today" subtitle="By units sold" icon={Package}>
+          <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+            {todayProducts.length > 0 ? todayProducts.map((product, index) => (
               <div key={product.name} className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
                   style={{ backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`, color: CHART_COLORS[index % CHART_COLORS.length] }}>
@@ -354,7 +365,7 @@ export default function Dashboard() {
                     <div
                       className="h-full rounded-full transition-all duration-1000"
                       style={{
-                        width: `${topProducts.length > 0 ? (product.unitsSold / topProducts[0].unitsSold) * 100 : 0}%`,
+                        width: `${todayProducts.length > 0 ? (product.unitsSold / todayProducts[0].unitsSold) * 100 : 0}%`,
                         backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
                       }}
                     />
@@ -363,7 +374,7 @@ export default function Dashboard() {
                 <p className="text-sm font-semibold text-primary ml-2">{formatCurrency(product.revenue)}</p>
               </div>
             )) : (
-              <p className="text-sm text-muted-foreground text-center py-8">No product data yet</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No products sold today</p>
             )}
           </div>
         </ChartCard>

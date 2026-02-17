@@ -25,7 +25,7 @@ const navigation = [
   { name: 'POS Terminal', href: '/pos', icon: ShoppingCart },
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Orders', href: '/orders', icon: Receipt },
-  { name: 'Customers', href: '/customers', icon: Users },
+  // { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Employees', href: '/employees', icon: UserCog },
   { name: 'Inventory', href: '/inventory', icon: Boxes },
   { name: 'Shift Reports', href: '/shift-reports', icon: FileText },

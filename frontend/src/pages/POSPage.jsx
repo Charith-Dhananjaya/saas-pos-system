@@ -22,6 +22,8 @@ export default function POSPage() {
   const [cart, setCart] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [customers, setCustomers] = useState([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentType, setPaymentType] = useState('CASH');
@@ -173,6 +175,8 @@ export default function POSPage() {
       const orderData = {
         storeId: store.id,
         customerId: selectedCustomer?.id || null,
+        customerName: !selectedCustomer && customerName ? customerName : null,
+        customerPhone: !selectedCustomer && customerPhone ? customerPhone : null,
         cashier: {
           id: user.id,
         },
@@ -199,6 +203,8 @@ export default function POSPage() {
       // Clear cart and reset state
       setCart([]);
       setSelectedCustomer(null);
+      setCustomerName('');
+      setCustomerPhone('');
       setPaymentDialogOpen(false);
       setPaymentType('CASH');
       setIsCustomerSectionOpen(false); // Close customer section
@@ -355,10 +361,12 @@ export default function POSPage() {
               </button>
 
               {isCustomerSectionOpen && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-3">
+                  {/* Search Existing */}
                   <div className="relative">
+                    <Label className="text-xs text-muted-foreground mb-1 block">Search Existing</Label>
                     <Input
-                      placeholder="Search customer..."
+                      placeholder="Search by name or phone..."
                       value={customerSearch}
                       onChange={(e) => {
                         setCustomerSearch(e.target.value);
@@ -373,6 +381,8 @@ export default function POSPage() {
                             onClick={() => {
                               setSelectedCustomer(customer);
                               setCustomerSearch(customer.fullName);
+                              setCustomerName(customer.fullName);
+                              setCustomerPhone(customer.phone);
                               setCustomers([]);
                               setIsCustomerSectionOpen(false);
                             }}
@@ -384,17 +394,49 @@ export default function POSPage() {
                       </div>
                     )}
                   </div>
+
+                  {!selectedCustomer && (
+                    <>
+                      <div className="relative flex py-1 items-center">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink-0 mx-2 text-xs text-gray-400">OR QUICK ADD</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">New Customer Name</Label>
+                          <Input
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Enter name"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                          <Input
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            placeholder="Enter phone"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   {selectedCustomer && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-red-500 h-8"
+                      className="w-full text-red-500 h-8 mt-2"
                       onClick={() => {
                         setSelectedCustomer(null);
                         setCustomerSearch('');
+                        setCustomerName('');
+                        setCustomerPhone('');
                       }}
                     >
-                      Remove Customer
+                      Remove Selected Customer
                     </Button>
                   )}
                 </div>

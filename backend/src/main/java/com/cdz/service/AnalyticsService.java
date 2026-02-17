@@ -9,7 +9,7 @@ public interface AnalyticsService {
 
     List<Map<String, Object>> getRevenueTrend(Long storeId, int days);
 
-    List<Map<String, Object>> getTopProducts(Long storeId, int limit);
+    List<Map<String, Object>> getTopProducts(Long storeId, int limit, String period);
 
     Map<String, Object> getOrderStats(Long storeId);
 

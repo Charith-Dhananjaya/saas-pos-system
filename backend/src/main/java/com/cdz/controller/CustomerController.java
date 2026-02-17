@@ -18,10 +18,17 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final com.cdz.service.UserService userService;
 
     @PostMapping
     @Operation(summary = "Create a customer")
-    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer,
+            @RequestHeader("Authorization") String jwt) throws Exception {
+        com.cdz.model.User user = userService.getUserFromJwtToken(jwt);
+        if (user.getStore() == null) {
+            throw new Exception("User is not associated with any store");
+        }
+        customer.setStore(user.getStore());
         return ResponseEntity.ok(customerService.createCustomer(customer));
     }
 
@@ -44,7 +51,11 @@ public class CustomerController {
 
     @GetMapping
     @Operation(summary = "Get all customers")
-    public ResponseEntity<List<Customer>> getAll() throws Exception {
+    public ResponseEntity<List<Customer>> getAll(@RequestHeader("Authorization") String jwt) throws Exception {
+        com.cdz.model.User user = userService.getUserFromJwtToken(jwt);
+        if (user.getStore() != null) {
+            return ResponseEntity.ok(customerService.getCustomersByStoreId(user.getStore().getId()));
+        }
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
 

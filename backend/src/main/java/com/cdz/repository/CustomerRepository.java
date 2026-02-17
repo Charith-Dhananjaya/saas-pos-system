@@ -9,6 +9,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     List<Customer> findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String firstName, String email);
 
+    List<Customer> findByStoreId(Long storeId);
+
     long countByStoreId(Long storeId);
 
 }

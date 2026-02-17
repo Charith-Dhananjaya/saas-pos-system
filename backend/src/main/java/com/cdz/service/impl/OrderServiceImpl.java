@@ -31,6 +31,7 @@ public class OrderServiceImpl implements OrderService {
         private final ProductRepository productRepository;
         private final InventoryRepository inventoryRepository;
         private final BillingService billingService;
+        private final com.cdz.service.CustomerService customerService;
 
         @Override
         @Transactional
@@ -44,10 +45,44 @@ public class OrderServiceImpl implements OrderService {
                 }
                 System.out.println("Creating order for store: " + store.getId() + " - " + store.getBrand());
 
+                Customer customer = null;
+                if (orderDTO.getCustomerId() != null) {
+                        // Use existing logic if ID is provided (e.g., from search)
+                        // ... fetch customer by ID ...
+                        // For now, let's assume the frontend might still send the full object or ID
+                        // But we prioritize the new flow if name/phone are sent without ID
+                }
+
+                // New Flow: Auto-create or Link by Phone
+                if (orderDTO.getCustomerPhone() != null && !orderDTO.getCustomerPhone().isEmpty()) {
+                        List<Customer> existing = customerService.searchCustomer(orderDTO.getCustomerPhone()); // Assuming
+                                                                                                               // searchCustomer
+                                                                                                               // uses
+                                                                                                               // phone
+                                                                                                               // too,
+                                                                                                               // or we
+                                                                                                               // use
+                                                                                                               // repository
+                                                                                                               // directly
+                        if (!existing.isEmpty()) {
+                                customer = existing.get(0);
+                        } else {
+                                // Create new
+                                customer = new Customer();
+                                customer.setFullName(orderDTO.getCustomerName() != null ? orderDTO.getCustomerName()
+                                                : "Guest");
+                                customer.setPhone(orderDTO.getCustomerPhone());
+                                customer.setStore(store);
+                                customer = customerService.createCustomer(customer); // Reuse service to save
+                        }
+                } else if (orderDTO.getCustomer() != null) {
+                        customer = orderDTO.getCustomer();
+                }
+
                 Order order = Order.builder()
                                 .store(store)
                                 .cashier(cashier)
-                                .customer(orderDTO.getCustomer())
+                                .customer(customer)
                                 .paymentType(orderDTO.getPaymentType())
                                 .build();
 
