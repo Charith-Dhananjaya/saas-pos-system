@@ -1,6 +1,5 @@
 package com.cdz.model;
 
-
 import com.cdz.domain.StoreStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,14 +21,18 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false,  unique = true)
+    @Column(nullable = false, unique = true)
     private String sku;
-// Stock Keeping Unit
+    // Stock Keeping Unit
     private String description;
 
     private Double mrp;
 
     private Double sellingPrice;
+
+    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
+    private Double discountPercentage = 0.0; // 0-100 percentage discount on selling price
+
     private String brand;
     private String image;
 
@@ -43,12 +46,12 @@ public class Product {
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 

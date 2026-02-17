@@ -1,6 +1,5 @@
 package com.cdz.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +27,9 @@ public class Inventory {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false)
+    private Integer lowStockThreshold = 10; // Default threshold of 10 units
+
     private LocalDateTime lastUpdate;
 
     @PrePersist
@@ -36,5 +38,10 @@ public class Inventory {
         lastUpdate = LocalDateTime.now();
     }
 
+    // Check if inventory is below threshold
+    public boolean isLowStock() {
+        return quantity != null && lowStockThreshold != null &&
+                quantity <= lowStockThreshold;
+    }
 
 }

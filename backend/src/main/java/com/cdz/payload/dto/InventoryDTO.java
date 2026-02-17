@@ -1,6 +1,5 @@
 package com.cdz.payload.dto;
 
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,6 +17,8 @@ public class InventoryDTO {
     private Long productId;
 
     private Integer quantity;
+
+    private Integer lowStockThreshold;
 
     private LocalDateTime lastUpdate;
 }

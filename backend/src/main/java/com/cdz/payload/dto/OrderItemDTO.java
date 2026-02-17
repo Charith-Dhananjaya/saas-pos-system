@@ -1,6 +1,5 @@
 package com.cdz.payload.dto;
 
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,12 +12,13 @@ public class OrderItemDTO {
     private Integer quantity;
 
     private Double price;
+    private Double originalPrice;
+    private Double discountApplied;
 
     private ProductDTO product;
 
     private Long productId;
 
     private Long orderId;
-
 
 }

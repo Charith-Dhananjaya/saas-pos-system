@@ -1,6 +1,5 @@
 package com.cdz.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,16 +35,13 @@ public class ShiftReport {
     @Transient
     private List<PaymentSummary> paymentSummaries;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.MERGE)
     private List<Product> topSellingProducts;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.MERGE)
     private List<Order> recentOrders;
 
-
-    @OneToMany(mappedBy = "shiftReport",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "shiftReport", cascade = CascadeType.ALL)
     private List<Refund> refunds;
-
-
 
 }

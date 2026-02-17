@@ -25,8 +25,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public Map<String, Object> getDashboardSummary(Long storeId) {
-        List<Order> allOrders = orderRepository.findByStoreId(storeId);
-
+        System.out.println("Fetching Dashboard Summary for Store ID: " + storeId);
         // Today's metrics
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
@@ -36,20 +35,25 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0)
                 .sum();
 
-        double totalRevenue = allOrders.stream()
-                .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0)
-                .sum();
+        // Total metrics using efficient queries
+        Double totalRevenue = orderRepository.sumTotalAmountByStoreId(storeId);
+        if (totalRevenue == null)
+            totalRevenue = 0.0;
 
-        double avgOrderValue = allOrders.isEmpty() ? 0 : totalRevenue / allOrders.size();
+        long totalOrders = orderRepository.countByStoreId(storeId);
 
-        long totalCustomers = customerRepository.count();
-        long totalProducts = productRepository.findByStoreId(storeId).size();
+        // Avg Order Value
+        double avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+        // Count per store (Fixes global count bug)
+        long totalCustomers = customerRepository.countByStoreId(storeId);
+        long totalProducts = productRepository.countByStoreId(storeId);
 
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("todayRevenue", Math.round(todayRevenue * 100.0) / 100.0);
         summary.put("todayOrders", todayOrders.size());
         summary.put("totalRevenue", Math.round(totalRevenue * 100.0) / 100.0);
-        summary.put("totalOrders", allOrders.size());
+        summary.put("totalOrders", totalOrders);
         summary.put("avgOrderValue", Math.round(avgOrderValue * 100.0) / 100.0);
         summary.put("totalCustomers", totalCustomers);
         summary.put("totalProducts", totalProducts);

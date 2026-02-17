@@ -14,9 +14,7 @@ public class ProductDTO {
 
     private Long id;
 
-
     private String name;
-
 
     private String sku;
 
@@ -25,6 +23,7 @@ public class ProductDTO {
     private Double mrp;
 
     private Double sellingPrice;
+    private Double discountPercentage;
     private String brand;
     private String image;
 

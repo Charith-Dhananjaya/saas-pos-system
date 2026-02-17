@@ -13,6 +13,18 @@ spring:
       ddl-auto: update
     show-sql: ${SHOW_SQL:true}
 
+  mail:
+    host: smtp.resend.com
+    port: 587
+    username: resend
+    password: ${RESEND_API_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: ${SERVER_PORT:5000}
   servlet:
@@ -43,6 +55,10 @@ management:
     web:
       exposure:
         include: health,info,prometheus,metrics
+  health:
+    mail:
+      enabled: false
+
   metrics:
     export:
       prometheus:

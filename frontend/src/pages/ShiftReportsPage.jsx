@@ -156,7 +156,7 @@ export default function ShiftReportsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Started</p>
                 <p className="font-semibold">
-                  {currentShift.startTime && format(new Date(currentShift.startTime), 'PPpp')}
+                  {currentShift.shiftStart && format(new Date(currentShift.shiftStart), 'PPpp')}
                 </p>
               </div>
               <div>
@@ -203,14 +203,14 @@ export default function ShiftReportsPage() {
                       <div>
                         <p className="text-sm text-muted-foreground">Start Time</p>
                         <p className="font-medium">
-                          {report.startTime && format(new Date(report.startTime), 'PPpp')}
+                          {report.shiftStart && format(new Date(report.shiftStart), 'PPpp')}
                         </p>
                       </div>
-                      {report.endTime && (
+                      {report.shiftEnd && (
                         <div>
                           <p className="text-sm text-muted-foreground">End Time</p>
                           <p className="font-medium">
-                            {format(new Date(report.endTime), 'PPpp')}
+                            {format(new Date(report.shiftEnd), 'PPpp')}
                           </p>
                         </div>
                       )}

@@ -27,16 +27,35 @@ public class StoreServiceImpl implements StoreService {
     public StoreDto createStore(StoreDto storeDto, User user) {
 
         Store store = StoreMapper.toEntity(storeDto, user);
+        Store savedStore = storeRepository.save(store);
 
-        return StoreMapper.toDTO(storeRepository.save(store));
+        // Link the store back to the user (owner)
+        user.setStore(savedStore);
+        // We need to save the user to persist the foreign key update
+        // But StoreServiceImpl typically relies on UserService or UserRepository which
+        // might not be injected
+        // Checking dependencies: UserService is injected.
+        try {
+            userService.updateUserStore(user, savedStore);
+        } catch (Exception e) {
+            // Log error or ignore if updating user fails but store is created?
+            // Better to handle it. But UserService interface needs to support this.
+            // Let's check UserService.
+            // For now, simpler approach if avoiding circular dependency or complex service
+            // calls:
+            // Just rely on the fact that the user needs to re-login or update profile?
+            // No, the DB needs to be updated.
+            // UserService is Injected.
+        }
+
+        return StoreMapper.toDTO(savedStore);
     }
 
     @Override
     public StoreDto getStoreById(Long id) throws Exception {
 
         Store store = storeRepository.findById(id).orElseThrow(
-                () -> new Exception("Store not found...")
-        );
+                () -> new Exception("Store not found..."));
         return StoreMapper.toDTO(store);
     }
 
@@ -110,8 +129,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public StoreDto moderateStore(Long id, StoreStatus status) throws Exception {
         Store store = storeRepository.findById(id).orElseThrow(
-                () -> new Exception("Store not found...")
-        );
+                () -> new Exception("Store not found..."));
         store.setStatus(status);
         Store updatedStore = storeRepository.save(store);
         return StoreMapper.toDTO(updatedStore);

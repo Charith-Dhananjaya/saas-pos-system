@@ -131,7 +131,7 @@ export default function Dashboard() {
           analyticsAPI.getTopProducts(storeId, 6),
           analyticsAPI.getHourlySales(storeId),
           analyticsAPI.getOrderStats(storeId),
-          orderAPI.getRecentByStore(storeId),
+          orderAPI.getRecentOrders(storeId),
         ]);
         setSummary(summaryRes.data);
         setRevenueTrend(trendRes.data);
@@ -146,6 +146,10 @@ export default function Dashboard() {
       }
     };
     fetchAnalytics();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchAnalytics, 30000);
+    return () => clearInterval(interval);
   }, [storeId]);
 
   if (loading) {

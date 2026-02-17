@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { refundAPI, orderAPI, storeAPI } from '../lib/api';
+import { orderAPI, storeAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Loader2, RotateCcw } from 'lucide-react';

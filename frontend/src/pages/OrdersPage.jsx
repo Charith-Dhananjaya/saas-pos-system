@@ -5,8 +5,9 @@ import { useToast } from '../components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Button } from '../components/ui/button';
-import { Loader2, Receipt } from 'lucide-react';
+import { Loader2, Receipt, Printer } from 'lucide-react';
 import { format } from 'date-fns';
+import { ReceiptModal } from '../components/ReceiptModal';
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -18,6 +19,9 @@ export default function OrdersPage() {
     paymentType: 'all',
     orderStatus: 'all',
   });
+
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -63,6 +67,11 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewReceipt = (orderId) => {
+    setSelectedOrderId(orderId);
+    setShowReceipt(true);
   };
 
   if (loading) {
@@ -174,10 +183,19 @@ export default function OrdersPage() {
                       </div>
                     )}
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-2">
                     <div className="text-2xl font-bold">
                       ${order.totalAmount?.toFixed(2) || '0.00'}
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewReceipt(order.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Printer className="h-4 w-4" />
+                      View Receipt
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -185,6 +203,12 @@ export default function OrdersPage() {
           ))
         )}
       </div>
+
+      <ReceiptModal
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        orderId={selectedOrderId}
+      />
     </div>
   );
 }
