@@ -25,6 +25,9 @@ public class OrderDTO {
     private Long storeId;
     private Long customerId;
 
+    private String customerName;
+    private String customerPhone;
+
     private UserDto cashier;
 
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties("store")

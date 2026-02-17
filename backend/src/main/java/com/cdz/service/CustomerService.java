@@ -16,7 +16,8 @@ public interface CustomerService {
 
     List<Customer> getAllCustomers() throws Exception;
 
-    List<Customer> searchCustomer(String keyword) throws Exception;
+    List<Customer> getCustomersByStoreId(Long storeId);
 
+    List<Customer> searchCustomer(String keyword) throws Exception;
 
 }

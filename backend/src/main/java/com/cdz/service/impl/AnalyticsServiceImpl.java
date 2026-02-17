@@ -22,6 +22,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final com.cdz.repository.OrderItemRepository orderItemRepository;
 
     @Override
     public Map<String, Object> getDashboardSummary(Long storeId) {
@@ -47,7 +48,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         // Count per store (Fixes global count bug)
         long totalCustomers = customerRepository.countByStoreId(storeId);
-        long totalProducts = productRepository.countByStoreId(storeId);
+        Long itemsSold = orderItemRepository.sumQuantityByStoreId(storeId);
+        long totalProducts = itemsSold != null ? itemsSold : 0;
+
+        System.out.println("Dashboard Counts for Store " + storeId + " -> Customers: " + totalCustomers + ", Products: "
+                + totalProducts);
 
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("todayRevenue", Math.round(todayRevenue * 100.0) / 100.0);
@@ -89,8 +94,16 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public List<Map<String, Object>> getTopProducts(Long storeId, int limit) {
-        List<Order> orders = orderRepository.findByStoreId(storeId);
+    public List<Map<String, Object>> getTopProducts(Long storeId, int limit, String period) {
+        List<Order> orders;
+
+        if ("TODAY".equalsIgnoreCase(period)) {
+            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+            LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+            orders = orderRepository.findByStoreIdAndCreatedAtBetween(storeId, startOfDay, endOfDay);
+        } else {
+            orders = orderRepository.findByStoreId(storeId);
+        }
 
         // Count items sold per product
         Map<String, Long> productCount = new HashMap<>();

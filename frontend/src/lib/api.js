@@ -160,7 +160,7 @@ export const shiftReportAPI = {
 export const analyticsAPI = {
   getDashboardSummary: (storeId) => api.get(`/api/analytics/summary/${storeId}`),
   getRevenueTrend: (storeId, days = 30) => api.get(`/api/analytics/revenue-trend/${storeId}`, { params: { days } }),
-  getTopProducts: (storeId, limit = 10) => api.get(`/api/analytics/top-products/${storeId}`, { params: { limit } }),
+  getTopProducts: (storeId, limit = 10, period = null) => api.get(`/api/analytics/top-products/${storeId}`, { params: { limit, period } }),
   getOrderStats: (storeId) => api.get(`/api/analytics/order-stats/${storeId}`),
   getHourlySales: (storeId) => api.get(`/api/analytics/hourly-sales/${storeId}`),
 };

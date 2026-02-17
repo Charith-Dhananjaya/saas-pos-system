@@ -36,8 +36,9 @@ public class AnalyticsController {
     @Operation(summary = "Top selling products")
     public ResponseEntity<List<Map<String, Object>>> getTopProducts(
             @PathVariable Long storeId,
-            @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(analyticsService.getTopProducts(storeId, limit));
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String period) {
+        return ResponseEntity.ok(analyticsService.getTopProducts(storeId, limit, period));
     }
 
     @GetMapping("/order-stats/{storeId}")
