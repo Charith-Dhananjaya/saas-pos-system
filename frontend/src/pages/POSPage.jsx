@@ -7,7 +7,8 @@ import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Search, Plus, Minus, Trash2, CreditCard, DollarSign, Smartphone, Loader2 } from 'lucide-react';
+import { Search, Plus, Minus, Trash2, CreditCard, DollarSign, Smartphone, Loader2, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { ReceiptModal } from '../components/ReceiptModal';
 
 export default function POSPage() {
   const { user } = useAuth();
@@ -25,6 +26,13 @@ export default function POSPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentType, setPaymentType] = useState('CASH');
   const [loading, setLoading] = useState(true);
+
+  // Receipt State
+  const [receiptOrderId, setReceiptOrderId] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+
+  // UI State
+  const [isCustomerSectionOpen, setIsCustomerSectionOpen] = useState(false);
 
   useEffect(() => {
     loadStoreAndProducts();
@@ -99,6 +107,11 @@ export default function POSPage() {
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.product.id === product.id);
 
+    // Calculate discounted price
+    const basePrice = product.sellingPrice || product.mrp || 0;
+    const discountPercentage = product.discountPercentage || 0;
+    const discountedPrice = basePrice * (1 - discountPercentage / 100);
+
     if (existingItem) {
       setCart(cart.map(item =>
         item.product.id === product.id
@@ -109,7 +122,8 @@ export default function POSPage() {
       setCart([...cart, {
         product,
         quantity: 1,
-        price: product.sellingPrice || product.mrp || 0,
+        price: discountedPrice,
+        originalPrice: basePrice,
       }]);
     }
   };
@@ -131,6 +145,14 @@ export default function POSPage() {
 
   const getTotal = () => {
     return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
+  const getSubtotal = () => {
+    return cart.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
+  };
+
+  const getTotalDiscount = () => {
+    return getSubtotal() - getTotal();
   };
 
   const handleCheckout = () => {
@@ -163,10 +185,6 @@ export default function POSPage() {
         })),
       };
 
-      // Note: For CARD payments, Stripe integration would be handled here
-      // For now, we'll create the order with the payment type
-      // Full Stripe integration can be added later with proper payment confirmation flow
-
       const response = await orderAPI.create(orderData);
 
       toast({
@@ -174,11 +192,16 @@ export default function POSPage() {
         description: "Order created successfully!",
       });
 
-      // Clear cart
+      // Show receipt
+      setReceiptOrderId(response.data.id);
+      setShowReceipt(true);
+
+      // Clear cart and reset state
       setCart([]);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
       setPaymentType('CASH');
+      setIsCustomerSectionOpen(false); // Close customer section
 
       // Reload products to update inventory
       loadStoreAndProducts();
@@ -265,21 +288,43 @@ export default function POSPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto">
-              {filteredProducts.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => addToCart(product)}
-                  className="p-3 border rounded-lg hover:bg-gray-50 text-left transition-colors"
-                >
-                  <div className="font-medium text-sm">{product.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    ${product.sellingPrice || product.mrp || 0}
-                  </div>
-                  {product.sku && (
-                    <div className="text-xs text-muted-foreground">SKU: {product.sku}</div>
-                  )}
-                </button>
-              ))}
+              {filteredProducts.map((product) => {
+                const hasDiscount = product.discountPercentage > 0;
+                const basePrice = product.sellingPrice || product.mrp || 0;
+                const discountedPrice = hasDiscount ? basePrice * (1 - product.discountPercentage / 100) : basePrice;
+
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => addToCart(product)}
+                    className="p-3 border rounded-lg hover:bg-gray-50 text-left transition-colors relative"
+                  >
+                    {hasDiscount && (
+                      <span className="absolute top-2 right-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-500/20 text-green-600 border border-green-500/30">
+                        {product.discountPercentage}% OFF
+                      </span>
+                    )}
+                    <div className="font-medium text-sm pr-12">{product.name}</div>
+                    {hasDiscount ? (
+                      <div className="mt-1">
+                        <div className="text-[10px] text-muted-foreground line-through">
+                          ${basePrice.toFixed(2)}
+                        </div>
+                        <div className="text-xs font-medium text-green-600">
+                          ${discountedPrice.toFixed(2)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        ${basePrice.toFixed(2)}
+                      </div>
+                    )}
+                    {product.sku && (
+                      <div className="text-xs text-muted-foreground">SKU: {product.sku}</div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -292,39 +337,66 @@ export default function POSPage() {
             <CardTitle>Cart</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col">
-            {/* Customer Selection */}
-            <div className="mb-4 space-y-2">
-              <label className="text-sm font-medium">Customer (Optional)</label>
-              <div className="relative">
-                <Input
-                  placeholder="Search customer..."
-                  value={customerSearch}
-                  onChange={(e) => {
-                    setCustomerSearch(e.target.value);
-                    searchCustomers(e.target.value);
-                  }}
-                />
-                {customers.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    {customers.map((customer) => (
-                      <button
-                        key={customer.id}
-                        onClick={() => {
-                          setSelectedCustomer(customer);
-                          setCustomerSearch(customer.fullName);
-                          setCustomers([]);
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                      >
-                        {customer.fullName} - {customer.email || customer.phone}
-                      </button>
-                    ))}
+            {/* Collapsible Customer Selection */}
+            <div className="mb-4 border rounded-lg p-2">
+              <button
+                onClick={() => setIsCustomerSectionOpen(!isCustomerSectionOpen)}
+                className="flex items-center justify-between w-full text-sm font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {selectedCustomer ? (
+                    <span className="text-green-600">{selectedCustomer.fullName}</span>
+                  ) : (
+                    <span>Customer (Optional)</span>
+                  )}
+                </div>
+                {isCustomerSectionOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {isCustomerSectionOpen && (
+                <div className="mt-3 space-y-2">
+                  <div className="relative">
+                    <Input
+                      placeholder="Search customer..."
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        searchCustomers(e.target.value);
+                      }}
+                    />
+                    {customers.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        {customers.map((customer) => (
+                          <button
+                            key={customer.id}
+                            onClick={() => {
+                              setSelectedCustomer(customer);
+                              setCustomerSearch(customer.fullName);
+                              setCustomers([]);
+                              setIsCustomerSectionOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                          >
+                            {customer.fullName} - {customer.email || customer.phone}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {selectedCustomer && (
-                <div className="text-sm text-muted-foreground">
-                  Selected: {selectedCustomer.fullName}
+                  {selectedCustomer && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-red-500 h-8"
+                      onClick={() => {
+                        setSelectedCustomer(null);
+                        setCustomerSearch('');
+                      }}
+                    >
+                      Remove Customer
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -336,48 +408,73 @@ export default function POSPage() {
                   Cart is empty
                 </p>
               ) : (
-                cart.map((item) => (
-                  <div key={item.product.id} className="flex items-center justify-between p-2 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{item.product.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        ${item.price} × {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                cart.map((item) => {
+                  const hasDiscount = item.originalPrice > item.price;
+                  return (
+                    <div key={item.product.id} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-sm">{item.product.name}</div>
+                          {hasDiscount && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-500/20 text-green-600 border border-green-500/30">
+                              {item.product.discountPercentage}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {hasDiscount && (
+                            <span className="line-through mr-2">${item.originalPrice.toFixed(2)}</span>
+                          )}
+                          ${item.price.toFixed(2)} × {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => updateCartQuantity(item.product.id, -1)}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="text-sm w-8 text-center">{item.quantity}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => updateCartQuantity(item.product.id, 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive"
+                          onClick={() => removeFromCart(item.product.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateCartQuantity(item.product.id, -1)}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="text-sm w-8 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateCartQuantity(item.product.id, 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => removeFromCart(item.product.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
             {/* Total */}
             <div className="border-t pt-4 space-y-2">
+              {getTotalDiscount() > 0 && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span>${getSubtotal().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount:</span>
+                    <span>-${getTotalDiscount().toFixed(2)}</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
                 <span>${getTotal().toFixed(2)}</span>
@@ -445,6 +542,13 @@ export default function POSPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Receipt Modal */}
+      <ReceiptModal
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        orderId={receiptOrderId}
+      />
     </div>
   );
 }

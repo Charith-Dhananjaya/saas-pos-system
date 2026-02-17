@@ -3,6 +3,7 @@ package com.cdz.controller;
 import com.cdz.domain.OrderStatus;
 import com.cdz.domain.PaymentType;
 import com.cdz.payload.dto.OrderDTO;
+import com.cdz.payload.dto.ReceiptDTO;
 import com.cdz.payload.response.ApiResponse;
 import com.cdz.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,5 +85,11 @@ public class OrderController {
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setMessage("Order Deleted");
         return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/{id}/receipt")
+    @Operation(summary = "Get receipt for an order")
+    public ResponseEntity<ReceiptDTO> getReceipt(@PathVariable Long id) throws Exception {
+        return ResponseEntity.ok(orderService.generateReceipt(id));
     }
 }

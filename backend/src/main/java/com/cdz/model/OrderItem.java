@@ -18,7 +18,9 @@ public class OrderItem {
 
     private Integer quantity;
 
-    private Double price;
+    private Double price; // Final price after discount
+    private Double originalPrice; // Price before discount
+    private Double discountApplied = 0.0; // Actual discount amount applied
 
     @ManyToOne
     private Product product;

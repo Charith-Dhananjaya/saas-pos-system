@@ -29,7 +29,7 @@ const navigation = [
   { name: 'Employees', href: '/employees', icon: UserCog },
   { name: 'Inventory', href: '/inventory', icon: Boxes },
   { name: 'Shift Reports', href: '/shift-reports', icon: FileText },
-  { name: 'Refunds', href: '/refunds', icon: RotateCcw },
+
   { name: 'Store Settings', href: '/store-settings', icon: Settings },
 ];
 

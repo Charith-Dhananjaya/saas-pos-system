@@ -27,6 +27,7 @@ export default function ProductsPage() {
     description: '',
     mrp: '',
     sellingPrice: '',
+    discountPercentage: '',
     brand: '',
     image: '',
     categoryId: '',
@@ -88,6 +89,7 @@ export default function ProductsPage() {
         description: product.description || '',
         mrp: product.mrp || '',
         sellingPrice: product.sellingPrice || '',
+        discountPercentage: product.discountPercentage || '',
         brand: product.brand || '',
         image: product.image || '',
         categoryId: product.category?.id || product.categoryId || '',
@@ -100,6 +102,7 @@ export default function ProductsPage() {
         description: '',
         mrp: '',
         sellingPrice: '',
+        discountPercentage: '',
         brand: '',
         image: '',
         categoryId: '',
@@ -116,6 +119,7 @@ export default function ProductsPage() {
         storeId: store.id,
         mrp: parseFloat(formData.mrp) || 0,
         sellingPrice: parseFloat(formData.sellingPrice) || 0,
+        discountPercentage: parseFloat(formData.discountPercentage) || 0,
       };
 
       if (editingProduct) {
@@ -237,13 +241,31 @@ export default function ProductsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold">{product.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{product.name}</h3>
+                        {product.discountPercentage > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                            {product.discountPercentage}% OFF
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         SKU: {product.sku || 'N/A'}
                       </p>
-                      <p className="text-sm font-medium mt-2">
-                        ${product.sellingPrice || product.mrp || 0}
-                      </p>
+                      {product.discountPercentage > 0 ? (
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground line-through">
+                            ${product.sellingPrice}
+                          </p>
+                          <p className="text-sm font-medium text-green-400">
+                            ${(product.sellingPrice * (1 - product.discountPercentage / 100)).toFixed(2)}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-medium mt-2">
+                          ${product.sellingPrice || product.mrp || 0}
+                        </p>
+                      )}
                       {product.category && (
                         <p className="text-xs text-muted-foreground mt-1">
                           {product.category.name}
@@ -339,7 +361,20 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="discountPercentage">Discount %</Label>
+                <Input
+                  id="discountPercentage"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={formData.discountPercentage}
+                  onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="brand">Brand</Label>
                 <Input

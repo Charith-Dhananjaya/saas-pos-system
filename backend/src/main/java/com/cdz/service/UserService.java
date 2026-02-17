@@ -21,4 +21,6 @@ public interface UserService {
 
     User updateUserProfile(User user, String fullName, String phone, String password, MultipartFile imageFile)
             throws IOException;
+
+    void updateUserStore(User user, com.cdz.model.Store store);
 }

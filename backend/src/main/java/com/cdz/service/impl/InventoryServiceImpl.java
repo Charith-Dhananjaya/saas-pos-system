@@ -27,11 +27,9 @@ public class InventoryServiceImpl implements InventoryService {
     public InventoryDTO createInventory(InventoryDTO inventoryDTO) throws Exception {
 
         Store store = storeRepository.findById(inventoryDTO.getStoreId()).orElseThrow(
-                () -> new Exception("Store not found")
-        );
+                () -> new Exception("Store not found"));
         Product product = productRepository.findById(inventoryDTO.getProductId()).orElseThrow(
-                () -> new Exception("Product not found")
-        );
+                () -> new Exception("Product not found"));
 
         Inventory inventory = InventoryMapper.toEntity(inventoryDTO, store, product);
         Inventory savedInventory = inventoryRepository.save(inventory);
@@ -42,8 +40,7 @@ public class InventoryServiceImpl implements InventoryService {
     public InventoryDTO updateInventory(Long id, InventoryDTO inventoryDTO) throws Exception {
 
         Inventory inventory = inventoryRepository.findById(id).orElseThrow(
-                ()-> new Exception("Inventory not found...")
-        );
+                () -> new Exception("Inventory not found..."));
 
         inventory.setQuantity(inventoryDTO.getQuantity());
         Inventory updatedInventory = inventoryRepository.save(inventory);
@@ -54,18 +51,15 @@ public class InventoryServiceImpl implements InventoryService {
     public void deleteInventory(Long id) throws Exception {
 
         Inventory inventory = inventoryRepository.findById(id).orElseThrow(
-                ()-> new Exception("Inventory not found...")
-        );
+                () -> new Exception("Inventory not found..."));
         inventoryRepository.delete(inventory);
-
 
     }
 
     @Override
     public InventoryDTO getInventoryById(Long id) throws Exception {
         Inventory inventory = inventoryRepository.findById(id).orElseThrow(
-                ()-> new Exception("Inventory not found...")
-        );
+                () -> new Exception("Inventory not found..."));
         return InventoryMapper.toDTO(inventory);
     }
 
@@ -80,5 +74,32 @@ public class InventoryServiceImpl implements InventoryService {
         return inventoryRepository.findByStoreId(storeId).stream()
                 .map(InventoryMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InventoryDTO> getLowStockByStore(Long storeId) {
+        return inventoryRepository.findByStoreId(storeId).stream()
+                .filter(inv -> inv.getQuantity() <= inv.getLowStockThreshold())
+                .map(InventoryMapper::toDTO)
+                .sorted((a, b) -> Integer.compare(a.getQuantity(), b.getQuantity())) // Lowest first
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public InventoryDTO updateLowStockThreshold(Long id, Integer threshold) throws Exception {
+        Inventory inventory = inventoryRepository.findById(id).orElseThrow(
+                () -> new Exception("Inventory not found"));
+        inventory.setLowStockThreshold(threshold);
+        Inventory updated = inventoryRepository.save(inventory);
+        return InventoryMapper.toDTO(updated);
+    }
+
+    @Override
+    public InventoryDTO addStock(Long id, Integer quantity) throws Exception {
+        Inventory inventory = inventoryRepository.findById(id).orElseThrow(
+                () -> new Exception("Inventory not found"));
+        inventory.setQuantity(inventory.getQuantity() + quantity);
+        Inventory updated = inventoryRepository.save(inventory);
+        return InventoryMapper.toDTO(updated);
     }
 }

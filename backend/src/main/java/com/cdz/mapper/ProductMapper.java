@@ -15,6 +15,7 @@ public class ProductMapper {
                 .description(product.getDescription())
                 .mrp(product.getMrp())
                 .sellingPrice(product.getSellingPrice())
+                .discountPercentage(product.getDiscountPercentage())
                 .brand(product.getBrand())
                 .category(CategoryMapper.toDTO(product.getCategory()))
                 .storeId(product.getStore() != null ? product.getStore().getId() : null)
@@ -22,23 +23,26 @@ public class ProductMapper {
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
-//                  .categoryId(product.getCategoryId())
+        // .categoryId(product.getCategoryId())
     }
-        public static Product toEntity(ProductDTO productDTO,
-                                       Store store,
-                                       Category category) {
-            return Product.builder()
-                    .name(productDTO.getName())
-                    .store(store)
-                    .category(category)
-                    .sku(productDTO.getSku())
-                    .description(productDTO.getDescription())
-                    .mrp(productDTO.getMrp())
-                    .sellingPrice(productDTO.getSellingPrice())
-                    .brand(productDTO.getBrand())
-                    .image(productDTO.getImage())
-                    .build();
 
-        }
+    public static Product toEntity(ProductDTO productDTO,
+            Store store,
+            Category category) {
+        return Product.builder()
+                .name(productDTO.getName())
+                .store(store)
+                .category(category)
+                .sku(productDTO.getSku())
+                .description(productDTO.getDescription())
+                .mrp(productDTO.getMrp())
+                .sellingPrice(productDTO.getSellingPrice())
+                .discountPercentage(
+                        productDTO.getDiscountPercentage() != null ? productDTO.getDiscountPercentage() : 0.0)
+                .brand(productDTO.getBrand())
+                .image(productDTO.getImage())
+                .build();
+
+    }
 
 }

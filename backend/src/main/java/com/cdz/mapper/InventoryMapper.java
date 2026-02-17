@@ -14,6 +14,7 @@ public class InventoryMapper {
                 .productId(inventory.getProduct() != null ? inventory.getProduct().getId() : null)
                 .product(inventory.getProduct() != null ? ProductMapper.toDTO(inventory.getProduct()) : null)
                 .quantity(inventory.getQuantity())
+                .lowStockThreshold(inventory.getLowStockThreshold())
                 .build();
     }
 

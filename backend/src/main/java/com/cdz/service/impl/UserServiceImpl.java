@@ -109,4 +109,10 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(user);
     }
+
+    @Override
+    public void updateUserStore(User user, com.cdz.model.Store store) {
+        user.setStore(store);
+        userRepository.save(user);
+    }
 }

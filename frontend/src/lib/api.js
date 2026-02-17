@@ -88,8 +88,11 @@ export const inventoryAPI = {
   create: (inventoryData) => api.post('/api/inventories', inventoryData),
   getById: (id) => api.get(`/api/inventories/${id}`),
   getByStore: (storeId) => api.get(`/api/inventories/store/${storeId}`),
+  getLowStockByStore: (storeId) => api.get(`/api/inventories/store/${storeId}/low-stock`),
   getByProductAndStore: (storeId, productId) => api.get(`/api/inventories/store/${storeId}/product/${productId}`),
   update: (id, inventoryData) => api.put(`/api/inventories/${id}`, inventoryData),
+  updateThreshold: (id, threshold) => api.patch(`/api/inventories/${id}/threshold`, null, { params: { threshold } }),
+  addStock: (id, quantity) => api.post(`/api/inventories/${id}/add-stock`, null, { params: { quantity } }),
   delete: (id) => api.delete(`/api/inventories/${id}`),
 };
 
@@ -97,6 +100,7 @@ export const inventoryAPI = {
 export const orderAPI = {
   create: (orderData) => api.post('/api/orders', orderData),
   getById: (id) => api.get(`/api/orders/${id}`),
+  getReceipt: (id) => api.get(`/api/orders/${id}/receipt`),
   getByStore: (storeId, filters = {}) => {
     const params = {};
     if (filters.customerId) params.customerId = filters.customerId;
@@ -141,21 +145,6 @@ export const billingAPI = {
     api.post('/api/billing/refund', { paymentIntentId, amountCents, reason }),
 };
 
-// Refund APIs
-export const refundAPI = {
-  create: (refundData) => api.post('/api/refunds', refundData),
-  getAll: () => api.get('/api/refunds'),
-  getById: (id) => api.get(`/api/refunds/${id}`),
-  getByCashier: (cashierId) => api.get(`/api/refunds/cashier/${cashierId}`),
-  getByStore: (storeId) => api.get(`/api/refunds/store/${storeId}`),
-  getByShift: (shiftId) => api.get(`/api/refunds/shift/${shiftId}`),
-  getByCashierAndDateRange: (cashierId, startDate, endDate) =>
-    api.get(`/api/refunds/cashier/${cashierId}/range`, {
-      params: { startDate, endDate }
-    }),
-  delete: (id) => api.delete(`/api/refunds/${id}`),
-};
-
 // Shift Report APIs
 export const shiftReportAPI = {
   startShift: () => api.post('/api/shift-report/start'),
@@ -174,6 +163,14 @@ export const analyticsAPI = {
   getTopProducts: (storeId, limit = 10) => api.get(`/api/analytics/top-products/${storeId}`, { params: { limit } }),
   getOrderStats: (storeId) => api.get(`/api/analytics/order-stats/${storeId}`),
   getHourlySales: (storeId) => api.get(`/api/analytics/hourly-sales/${storeId}`),
+};
+
+// Report APIs  
+export const reportAPI = {
+  getDailySales: (storeId, startDate, endDate) =>
+    api.get(`/api/reports/daily-sales/${storeId}`, { params: { startDate, endDate } }),
+  getItemSales: (storeId, startDate, endDate) =>
+    api.get(`/api/reports/item-sales/${storeId}`, { params: { startDate, endDate } }),
 };
 
 export default api;

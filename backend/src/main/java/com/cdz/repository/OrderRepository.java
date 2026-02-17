@@ -22,4 +22,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCashierAndCreatedAtBetween(User cashier, LocalDateTime from, LocalDateTime to);
 
     List<Order> findTop5ByStoreIdOrderByCreatedAtDesc(Long storeId);
+
+    long countByStoreId(Long storeId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.store.id = :storeId")
+    Double sumTotalAmountByStoreId(@org.springframework.data.repository.query.Param("storeId") Long storeId);
 }

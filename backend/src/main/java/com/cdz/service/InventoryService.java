@@ -17,4 +17,10 @@ public interface InventoryService {
     InventoryDTO getInventoryByProductIdAndStoreId(Long productId, Long storeId);
 
     List<InventoryDTO> getInventoryByStoreId(Long storeId);
+
+    List<InventoryDTO> getLowStockByStore(Long storeId);
+
+    InventoryDTO updateLowStockThreshold(Long id, Integer threshold) throws Exception;
+
+    InventoryDTO addStock(Long id, Integer quantity) throws Exception;
 }

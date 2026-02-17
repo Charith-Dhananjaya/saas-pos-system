@@ -45,7 +45,6 @@ public class OrderMapper {
             return null;
         }
 
-
         Long storeId = (order.getStore() != null) ? order.getStore().getId() : null;
         Long customerId = (order.getCustomer() != null) ? order.getCustomer().getId() : null;
 
@@ -53,14 +52,16 @@ public class OrderMapper {
 
         var itemDTOs = (order.getItems() != null)
                 ? order.getItems().stream()
-                .filter(Objects::nonNull)
-                .map(OrderItemMapper::toDTO)
-                .collect(Collectors.toList())
+                        .filter(Objects::nonNull)
+                        .map(OrderItemMapper::toDTO)
+                        .collect(Collectors.toList())
                 : Collections.emptyList();
 
         return OrderDTO.builder()
                 .id(order.getId())
                 .totalAmount(order.getTotalAmount())
+                .subtotal(order.getSubtotal())
+                .totalDiscount(order.getTotalDiscount())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .storeId(storeId)

@@ -7,7 +7,6 @@ public class OrderItemMapper {
 
     public static OrderItemDTO toDTO(OrderItem item) {
 
-
         if (item == null) {
             return null;
         }
@@ -16,6 +15,8 @@ public class OrderItemMapper {
                 .productId(item.getProduct().getId())
                 .quantity(item.getQuantity())
                 .price(item.getPrice())
+                .originalPrice(item.getOriginalPrice())
+                .discountApplied(item.getDiscountApplied())
                 .product(ProductMapper.toDTO(item.getProduct()))
                 .build();
     }

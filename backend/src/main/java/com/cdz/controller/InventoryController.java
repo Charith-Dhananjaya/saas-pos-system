@@ -61,4 +61,26 @@ public class InventoryController {
             @PathVariable Long productId) {
         return ResponseEntity.ok(inventoryService.getInventoryByProductIdAndStoreId(productId, storeId));
     }
+
+    @GetMapping("/store/{storeId}/low-stock")
+    @Operation(summary = "Get all low stock products for a store")
+    public ResponseEntity<List<InventoryDTO>> getLowStockProducts(@PathVariable Long storeId) {
+        return ResponseEntity.ok(inventoryService.getLowStockByStore(storeId));
+    }
+
+    @PatchMapping("/{id}/threshold")
+    @Operation(summary = "Update low stock threshold")
+    public ResponseEntity<InventoryDTO> updateThreshold(
+            @PathVariable Long id,
+            @RequestParam Integer threshold) throws Exception {
+        return ResponseEntity.ok(inventoryService.updateLowStockThreshold(id, threshold));
+    }
+
+    @PostMapping("/{id}/add-stock")
+    @Operation(summary = "Add stock to inventory")
+    public ResponseEntity<InventoryDTO> addStock(
+            @PathVariable Long id,
+            @RequestParam Integer quantity) throws Exception {
+        return ResponseEntity.ok(inventoryService.addStock(id, quantity));
+    }
 }

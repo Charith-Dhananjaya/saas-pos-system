@@ -8,7 +8,8 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Plus, Edit, Trash2, Loader2, AlertTriangle, Package } from 'lucide-react';
 
 export default function InventoryPage() {
   const { user } = useAuth();
@@ -18,10 +19,15 @@ export default function InventoryPage() {
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [addStockDialog, setAddStockDialog] = useState(false);
+  const [selectedInventory, setSelectedInventory] = useState(null);
+  const [addStockAmount, setAddStockAmount] = useState('');
+  const [viewMode, setViewMode] = useState('all'); // 'all' or 'low-stock'
   const [editingInventory, setEditingInventory] = useState(null);
   const [formData, setFormData] = useState({
     productId: '',
     quantity: '',
+    lowStockThreshold: 10,
   });
 
   useEffect(() => {
@@ -77,15 +83,43 @@ export default function InventoryPage() {
       setFormData({
         productId: inv.product?.id || inv.productId || '',
         quantity: inv.quantity || '',
+        lowStockThreshold: inv.lowStockThreshold || 10,
       });
     } else {
       setEditingInventory(null);
       setFormData({
         productId: '',
         quantity: '',
+        lowStockThreshold: 10,
       });
     }
     setDialogOpen(true);
+  };
+
+  const handleAddStockDialog = (inv) => {
+    setSelectedInventory(inv);
+    setAddStockAmount('');
+    setAddStockDialog(true);
+  };
+
+  const handleAddStock = async (e) => {
+    e.preventDefault();
+    try {
+      await inventoryAPI.addStock(selectedInventory.id, parseInt(addStockAmount));
+      toast({
+        title: "Success",
+        description: `Added ${addStockAmount} units to ${selectedInventory.product.name}`,
+      });
+      setAddStockDialog(false);
+      loadData();
+    } catch (error) {
+      console.error('Error adding stock:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add stock",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -104,6 +138,7 @@ export default function InventoryPage() {
         storeId: store.id,
         productId: parseInt(formData.productId),
         quantity: parseInt(formData.quantity),
+        lowStockThreshold: parseInt(formData.lowStockThreshold),
       };
 
       if (editingInventory) {
@@ -177,6 +212,9 @@ export default function InventoryPage() {
     );
   }
 
+  const lowStockItems = inventory.filter(inv => inv.quantity <= (inv.lowStockThreshold || 10));
+  const displayedInventory = viewMode === 'low-stock' ? lowStockItems : inventory;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -190,25 +228,73 @@ export default function InventoryPage() {
         </Button>
       </div>
 
+      {/* Low Stock Alert Banner */}
+      {lowStockItems.length > 0 && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div>
+              <h3 className="font-semibold text-destructive">Low Stock Alert</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {lowStockItems.length} product{lowStockItems.length > 1 ? 's are' : ' is'} running low on stock
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Tabs */}
+      <Tabs value={viewMode} onValueChange={setViewMode}>
+        <TabsList>
+          <TabsTrigger value="all">
+            <Package className="h-4 w-4 mr-2" />
+            All ({inventory.length})
+          </TabsTrigger>
+          <TabsTrigger value="low-stock">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Low Stock ({lowStockItems.length})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {inventory.map((inv) => (
-          <Card key={inv.id}>
+        {displayedInventory.map((inv) => (
+          <Card key={inv.id} className={inv.quantity <= (inv.lowStockThreshold || 10) ? 'border-destructive/50' : ''}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold">
-                    {inv.product?.name || 'Unknown Product'}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">
+                      {inv.product?.name || 'Unknown Product'}
+                    </h3>
+                    {inv.quantity <= (inv.lowStockThreshold || 10) && (
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     SKU: {inv.product?.sku || 'N/A'}
                   </p>
                   <div className="mt-2">
-                    <span className={`text-2xl font-bold ${inv.quantity <= 10 ? 'text-destructive' : 'text-primary'
+                    <span className={`text-2xl font-bold ${inv.quantity <= (inv.lowStockThreshold || 10) ? 'text-destructive' : 'text-primary'
                       }`}>
                       {inv.quantity}
                     </span>
                     <span className="text-sm text-muted-foreground ml-2">units</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Alert threshold: {inv.lowStockThreshold || 10}
+                  </p>
+                  {inv.quantity <= (inv.lowStockThreshold || 10) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 w-full"
+                      onClick={() => handleAddStockDialog(inv)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Stock
+                    </Button>
+                  )}
                 </div>
                 <div className="flex gap-1">
                   <Button
@@ -273,12 +359,74 @@ export default function InventoryPage() {
                 min="0"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="lowStockThreshold">Low Stock Alert Threshold *</Label>
+              <Input
+                id="lowStockThreshold"
+                type="number"
+                value={formData.lowStockThreshold}
+                onChange={(e) => setFormData({ ...formData, lowStockThreshold: e.target.value })}
+                required
+                min="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                You'll be alerted when quantity drops to or below this number
+              </p>
+            </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">
                 {editingInventory ? 'Update' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Stock Dialog */}
+      <Dialog open={addStockDialog} onOpenChange={setAddStockDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Stock</DialogTitle>
+            <DialogDescription>
+              Add more units to {selectedInventory?.product?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddStock} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Current Stock</Label>
+              <p className="text-2xl font-bold text-muted-foreground">
+                {selectedInventory?.quantity || 0} units
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addStockAmount">Quantity to Add *</Label>
+              <Input
+                id="addStockAmount"
+                type="number"
+                value={addStockAmount}
+                onChange={(e) => setAddStockAmount(e.target.value)}
+                required
+                min="1"
+                placeholder="Enter quantity"
+              />
+            </div>
+            {addStockAmount && (
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-sm text-muted-foreground">New Total</p>
+                <p className="text-xl font-bold text-primary">
+                  {(selectedInventory?.quantity || 0) + parseInt(addStockAmount || 0)} units
+                </p>
+              </div>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddStockDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Add Stock
               </Button>
             </DialogFooter>
           </form>
