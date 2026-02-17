@@ -79,10 +79,6 @@ docker-compose up -d mysql
     ```
     *Access the app at `http://localhost:3000` (or the port shown in terminal).*
 
-## 🔐 Default Credentials
-*For testing purposes with seeded data:*
-- **Email**: `charith.ddm@gmail.com`
-- **Password**: `password`
 
 ## 📂 Project Structure
 
